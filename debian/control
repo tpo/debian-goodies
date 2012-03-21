@@ -7,7 +7,7 @@ Standards-Version: 3.5.2
 
 Package: debian-goodies
 Architecture: all
-Depends: grep-dctrl, curl, python (>= 2.3), lsof
+Depends: dctrl-tools | grep-dctrl, curl, python (>= 2.3), lsof
 Suggests: popularity-contest
 Conflicts: debget
 Replaces: debget

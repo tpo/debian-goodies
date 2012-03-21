@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # Network testing script v 1.3
 # (c) 2005 Javier Fernandez-Sanguino
 #
@@ -193,9 +193,10 @@ check_netif () {
 	ip link show | egrep '^[[:digit:]]' |
 	while read ifnumber ifname status extra; do
 		ifname=`echo $ifname |sed -e 's/:$//'`
-		if [ -z "`echo $status | grep UP\>`" ] ; then
+		if [ -z "`echo $status | grep UP\>`" ] && \
+		   [ -z "`echo $status | grep UP,`" ] ; then
 			if  [ "$ifname" = "$defaultif" ] ; then
-				echo "ERR: The $ifname interface that is associated with your defualt route is down!"
+				echo "ERR: The $ifname interface that is associated with your default route is down!"
 				status=1
 			elif  [ "$ifname" = "lo"  ] ; then
 				echo "ERR: Your lo inteface is down, this might cause issues with local applications (but not necessarily with network connectivity)"
@@ -279,7 +280,9 @@ check_dns () {
 	nsok=0
 	tempfile=`mktemp tmptestnet.XXXXXX` || { echo "ERR: Cannot create temporary file! Aborting! " >&2 ; exit 1; }
 	trap " [ -f \"$tempfile\" ] && /bin/rm -f -- \"$tempfile\"" 0 1 2 3 13 15
-	cat /etc/resolv.conf |grep nameserver | 
+# TODO should warn about resolv.conf entries with more than one
+# ip address in the nameserver line 
+	cat /etc/resolv.conf |grep -v ^# | grep nameserver | 
 	awk '/nameserver/ { for (i=2;i<=NF;i++) {  print $i ; } }'  >$tempfile
 	for nameserver in `cat $tempfile`;  do
 		nsfound=$(( $nsfound + 1 ))

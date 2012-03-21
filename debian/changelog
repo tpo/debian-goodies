@@ -1,3 +1,18 @@
+debian-goodies (0.25) unstable; urgency=low
+
+  * Depend on dctrl-tools since grep-dctrl is a transitional package, keep
+    grep-dctrl to make it possible to backport this package (Closes: #385478)
+  * which-pkg-broke now looks in Pre-Depends thanks to the patch submitted by
+    Josh Triplett (Closes: #394950)
+  * Network-test changes:
+    - now uses bash only (Closes: #396324)
+    - correctly detects an interface as UP if it has been forced to a
+      given speed (Closes: #396336)
+    - do not test nameservers that have been commented out from resolv.conf
+    - fix a typo in a message
+
+ -- Javier Fernandez-Sanguino Pen~a <jfs@computer.org>  Wed,  1 Nov 2006 10:39:09 +0100
+
 debian-goodies (0.24) unstable; urgency=low
 
   * Taking up this package as new maintainer, after talking with Matt
