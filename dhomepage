@@ -53,11 +53,11 @@ case "$1" in
 		;;
 esac
 
-HOMEPAGE=`grep-aptavail -PX $PACKAGE -s Homepage | sed 's,^Homepage: ,,'`
+HOMEPAGE=`grep-aptavail -PX $PACKAGE -s Homepage | sed 's,^Homepage: ,,' | sort -u`
 
 if [ -z "$HOMEPAGE" ]; then
   HOMEPAGE=`grep-aptavail -PX $PACKAGE -s Description | \
-    sed -n '/^  Homepage: /{s,^  Homepage: ,,;p}'`
+    sed -n '/^  Homepage: /{s,^  Homepage: ,,;p}' | sort -u`
 fi
 
 if [ -z "$HOMEPAGE" ]; then
@@ -65,4 +65,6 @@ if [ -z "$HOMEPAGE" ]; then
   exit 1
 fi
 
-sensible-browser "$HOMEPAGE"
+for URL in $HOMEPAGE; do
+    sensible-browser "$URL"
+done
