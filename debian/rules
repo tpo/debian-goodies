@@ -44,7 +44,7 @@ install: build
 		ln -s dgrep $(CURDIR)/debian/debian-goodies/usr/bin/$$grepname; \
 	done
 	install -m 755 debmany/debmany \
-		$(CURDIR)/debian/debian-goodies/usr/sbin
+		$(CURDIR)/debian/debian-goodies/usr/bin
 
 # Build architecture-dependent files here.
 # We have nothing to do by default.

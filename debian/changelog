@@ -1,3 +1,12 @@
+debian-goodies (0.32) unstable; urgency=low
+
+  * Put debmany in the proper location (/usr/bin)
+  * Remove vi swap file from sources
+  * Small changes to debmany binary (typo, versiondate and a comment)
+  * Update debmany's manpages, I was putting in a previous version.
+
+ -- Javier Fernandez-Sanguino Pen~a <jfs@debian.org>  Tue, 28 Aug 2007 23:35:26 +0200
+
 debian-goodies (0.31) unstable; urgency=low
 
   * Introduce the debmany script written by Michael Arlt  (it was actually in

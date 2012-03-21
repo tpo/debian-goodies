@@ -1,4 +1,4 @@
-.TH "DEBMANY" "1" "1.1" "Michael Arlt" "User Commands"
+.TH "DEBMANY" "1" "1.2" "Michael Arlt" "User Commands"
 .SH "NAME"
 debmany \- select manpages from installed packages, packages from the repository or .deb\-files for viewing using "man" or an alternative viewer.
 .SH "SYNOPSIS"
@@ -6,7 +6,7 @@ debmany \- select manpages from installed packages, packages from the repository
 \fI\-\-help
 .br 
 .B debmany
-\fI[\-m manpageviewer|\-k|\-g|\-x] package|package.deb\fR
+\fI[\-m manpageviewer|\-k|\-g|\-x] [\-L limit] [\-l lang1[,...]] [package|package.deb\fR
 .SH "DESCRIPTION"
 .\" Add any additional description here
 .PP 
@@ -16,7 +16,7 @@ Select a manpage from a debian package for viewing with man or an alternative vi
 display a small help and exit
 .TP 
 \fB\-m manpageviewer\fR
-Optionally set a manpage viewer. The viewer must support .gz files. You can preset the desired manpage viewer with the environment variable DEBMANY_MANPAGE_VIEWER. You must define the complete request. "%s" gets replaced with the path to the manpage. The manpageviewer must be enclosed with "" or '' \- see examples.
+Optionally set a manpage viewer. The viewer must support .gz files. You must define the complete request. "%s" gets replaced with the path to the manpage. If "%s" is missing " %s" is appended to the manpageviewer. The manpageviewer must be enclosed with "" or '' \- see examples.
 If you use a graphical viewer you must ensure that you have access to your desktop (if necessary: sux or ssh with x\-forwarding)
 .TP 
 \fB\-k\fR
@@ -27,6 +27,12 @@ Display the manpage using your preferred viewer (must support .gz files) if you 
 .TP 
 \fB\-x\fR
 Display the manpage using your preferred viewer (must support .gz files) if you use KDE/GNOME/Xfce \- this is the short form of \-m 'xdg\-open man:%s'. "xdg\-open" is a part of the package "xdg\-utils".
+.TP 
+\fB\-L limit\fR
+If a file which must be downloaded exceeds the limit, you are asked if the download should start. Without unit the value is in bytes. You can append K, M, G or T to the value to change the unit.
+.TP 
+\fB\-l lang1[,...]\fR
+English manpages are displayed always. If you want more languages you can specify them here. Provide a comma separated list of the folder names in the manpgage folders (/usr/share/man,/usr/X11R6/man) \- e.g. de,fr or "*" if you want to see all languages. Folders with ".xyz" at the end (e.g. fr.ISO8859\-1) are automatically selected together with your choice (fr in this example).
 .PP 
 The manpages are temporarily extracted to /dev/shm (if the directory exists) or /tmp . You can override the path if you set and export the environment variable TMPDIR.
 .PP 
@@ -54,8 +60,8 @@ Use your preferred man\-viewer (for KDE/GNOME/Xfce user)
 debmany \-m 'konqueror man:%s' sc
 Use Konqueror as viewer
 .TP 
-export DEBMANY_MANPAGE_VIEWER="konqueror man:%s"; debmany sc
-Use the viewer specified in the environment variable DEBMANY_MANPAGE_VIEWER (konqueror)
+alias debmany='debmany \-l de \-L 5M \-k'; debmany \-m man \-l "*" foo
+Set an alias with your preferred options and overwrite them if needed.
 .SH "AUTHOR"
 Written by Michael Arlt.
 .SH "LICENSE"

@@ -1,4 +1,4 @@
-.TH "DEBMANY" "1" "1.1" "Michael Arlt" "Dienstprogramme für Benutzer"
+.TH "DEBMANY" "1" "1.2" "Michael Arlt" "Dienstprogramme für Benutzer"
 .SH "NAME"
 debmany \- Wählen von manpages aus installierten Paketen, Paketen des Repositories oder .deb\-Dateien zum Betrachten mit "man" oder einem alternativen Viewer.
 .SH "SYNTAX"
@@ -6,7 +6,7 @@ debmany \- Wählen von manpages aus installierten Paketen, Paketen des Repositori
 \fI\-\-help
 .br 
 .B debmany
-\fI[\-m manpageviewer|\-k|\-g|\-x] Paket|Paket.deb\fR
+\fI[\-m manpageviewer|\-k|\-g|\-x] [\-L Limit] [\-l Sprache1[,...]] Paket|Paket.deb\fR
 .SH "BESCHREIBUNG"
 .\" Add any additional description here
 .PP 
@@ -16,7 +16,7 @@ Wählen Sie eine Manpage von einem Debian Paket um sie mit "man" oder einem alter
 zeigt eine kurze Hilfe und beendet sich
 .TP 
 \fB\-m manpageviewer\fR
-Setzt optional den Manpageviewer. Der Viewer muss .gz Dateien unterstützen. Durch die Umgebungsvariable DEBMANY_MANPAGE_VIEWER kann der gewünschte Manpageviewer voreingestellt werden. Hierbei ist zu beachten, dass der komplette Aufruf formuliert werden muss. "%s" wird durch den Pfad zur Manpage ersetzt. Der Aufruf muss in "" oder '' gefasst werden \- siehe Beispiele.
+Setzt optional den Manpageviewer. Der Viewer muss .gz Dateien unterstützen. Es ist zu beachten, dass der komplette Aufruf formuliert werden muss. "%s" wird durch den Pfad zur Manpage ersetzt. Wenn "%s" fehlt wird " %s" an den Manpageviewer angehängt. Der Aufruf muss in "" oder '' gefasst werden \- siehe Beispiele.
 Bei der Benutzung eines grafischen Manpageviewers müssen Sie sicherstellen, dass Sie Zugriff auf den Desktop haben (ggf.: sux oder ssh mit x\-forwarding)
 .TP 
 \fB\-k\fR
@@ -27,6 +27,12 @@ Zeigt die Manpage im bevorzugten Viewer (muss .gz Dateien unterstützen) an, fall
 .TP 
 \fB\-x\fR
 Zeigt die Manpage im bevorzugten Viewer (muss .gz Dateien unterstützen) an, falls Sie KDE/GNOME/Xfce benutzen \- Kurzform von \-m 'xdg\-open man:%s'. "xdg\-open" ist Teil des Paketes "xdg\-utils".
+.TP 
+\fB\-L Limit\fR
+Überschreitet ein File, das per Download heruntergeladen werden muss, das Limit so werden Sie gefragt, ob der Download stattfinden soll. Ohne Angabe einer Einheit ist die Angabe in Bytes. Durch Anhängen der Buchstaben K, M, G der T kann die Einheit geändert werden.
+.TP 
+\fB\-l Sprache1[,...]\fR
+Englische Manpages werden immer angezeigt. Wenn Sie mehr Sprachen sehen wollen, so können Sie dies hier festlegen. Im Prinzip geben Sie hier eine mit Komma getrennte Liste der Ordner aus den Manpage Ordnern (/usr/share/man,/usr/X11R6/man) an \- z. B. de,fr oder "*" wenn Sie alle Sprachen sehen wollen. Ordner mit ".xyz" am Ende (z. B. fr.ISO8859\-1) werden automatisch durch Ihre Auswahl (fr in diesem Beispiel) selektiert.
 .PP 
 Die Manpages werden temporär nach /dev/shm (sofern dieses Verzeichnis existiert) oder /tmp extrahiert. Durch das Setzen und Exportieren der Umgebungsvariable TMPDIR kann der Speicherort überschrieben werden.
 .PP 
@@ -54,8 +60,8 @@ Benutzt den bevorzugten Manviewer (für KDE/GNOME/Xfce Anwender)
 debmany \-m 'konqueror man:%s' sc
 Benutzt Konqueror als Viewer
 .TP 
-export DEBMANY_MANPAGE_VIEWER="konqueror man:%s"; debmany sc
-Benutzt den in der Umgebungsvariable DEBMANY_MANPAGE_VIEWER festgelegten Viewer (konqueror)
+alias debmany='debmany \-l de \-L 5M \-k'; debmany \-m man \-l "*" foo
+Setzte einen Alias um die bevorzugten Optionen festzulegen. Diese können, wie man sieht, jederzeit überschrieben werden.
 .SH "AUTOR"
 Geschrieben von Michael Arlt.
 .SH "LIZENZ"

@@ -3,7 +3,7 @@
 # author:      Michael Arlt
 # description: select the manpages of any [not] installed debian package
 # comment:     debmany is based on the work of debman and debget
-# uses:        whiptail (preferred) or dialog
+# uses:        whiptail (preferred) or dialog as well as curl
 # This is free software.  You may redistribute copies of it under the terms of
 # the GNU General Public License <http://www.gnu.org/licenses/gpl.html>.
 # There is NO WARRANTY, to the extent permitted by law.
@@ -24,11 +24,11 @@ error()
 
 usage()
 {
-  echo "debmany 1.2 Sat Aug 25 22:38:17 CEST 2007
+  echo "debmany 1.2 Mon Aug 27 19:06:55 CEST 2007
 Description: Display a manpage from a Debian package.
              The list of manpages is displayed in a dialog.
              Supported locations for debian packages are: Local .deb-file,
-             a package in the repository or a installed package.
+             a package in the repository or an installed package.
 Syntax1 : debmany [-?|-h|--help]
 Syntax2 : debmany [-m viewer|-k|-g|-x] [-L limit] [-l lang1[,...]] package[.deb]
 Examples: debmany foo.deb  show manpages from a local package file foo.deb
@@ -43,7 +43,7 @@ Examples: debmany foo.deb  show manpages from a local package file foo.deb
                            show english, german and french manpages using
                            konqueror as man-viewer and ask if download size
                            exceeds 5M
-          alias debmany='debmany -l de -L 5M -k'; debmany -m man -l "*" foo
+          alias debmany='debmany -l de -L 5M -k'; debmany -m man -l '*' foo
                            set an alias with your preferred options and
                            overwrite them if needed"
   if [ $# -eq 0 ]
