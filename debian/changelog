@@ -1,3 +1,13 @@
+debian-goodies (0.40) unstable; urgency=low
+
+  * checkrestart:
+     - skip deleted files under /dev/pts/ to prevent telling users to 
+       restart gpm (Closes: 468124)
+     - support /usr being symlinked (Closes: 405040)
+     - minor changes in output messages.
+
+ -- Javier Fernandez-Sanguino Pen~a <jfs@debian.org>  Sat, 01 Mar 2008 16:36:40 +0100
+
 debian-goodies (0.39) unstable; urgency=low
 
   * Remove the network-test script, which now has been moved to the

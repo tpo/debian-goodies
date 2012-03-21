@@ -37,15 +37,15 @@
 import sys
 import os, errno
 import re
-import stat
 import pwd
 import sys
 import string
 import subprocess
+from stat import *
 
 if os.getuid() != 0:
-    sys.stderr.write('This program must be run as root\n')
-    sys.stderr.write('in order to collect information about all open file descriptors\n')
+    sys.stderr.write('ERROR: This program must be run as root in order to obtain information\n')
+    sys.stderr.write('about all open file descriptors in the system.\n')
     sys.exit(1)
 
 
@@ -81,7 +81,10 @@ def main():
         programs.setdefault(process.program, [])
         programs[process.program].append(process)
 
-    print "(%d distinct programs)" % len(programs)
+    if len(programs) == 1:
+        print "(%d distinct program)" % len(programs)
+    else:
+        print "(%d distinct programs)" % len(programs)
 
     packages = {}
     diverted = None
@@ -183,7 +186,7 @@ def lsofcheck():
                 last = process.descriptors.pop()
                 if not re.compile("DEL").search(last):
                     process.files.append(data)
-            elif data.startswith('/dev/zero'):
+            elif data.startswith('/dev/zero') or data.startswith('/dev/pts/'):
                 last = process.descriptors.pop()
                 if not re.compile("DEL").search(last):
                     process.files.append(data)
@@ -293,6 +296,15 @@ class Process:
         null = f.find('\0')
         if null != -1:
             f = f[:null]
+        # Support symlinked /usr
+        if f.startswith('/usr'):
+            statinfo = os.lstat('/usr')[ST_MODE]
+            if S_ISLNK(statinfo): 
+                newusr = os.readlink('/usr')
+                if not newusr.startswith('/'):
+                    newusr = os.path.join(os.path.dirname('/tmp/test'), newusr)
+                f = re.sub('^/usr',newusr, f)
+                print "Changing usr to " + newusr + " result:" +f;
         return re.sub('( \(deleted\)|.dpkg-new).*$','',f)
 
     # Check if a process needs to be restarted, previously we would
@@ -311,6 +323,9 @@ class Process:
 	    	continue
             # Or /dev/zero
             if f.startswith('/dev/zero'):
+	    	continue
+            # Or /dev/pts (used by gpm)
+            if f.startswith('/dev/pts/'):
 	    	continue
             # TODO: it should only care about library files (i.e. /lib, /usr/lib and the like)
             # build that check with a regexp to exclude others
