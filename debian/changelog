@@ -1,13 +1,16 @@
 debian-goodies (0.60) unstable; urgency=low
 
+  * The Handling-Multi-Arch Release
+
   * Change Vcs-* headers to new git repository (Closes: #623379)
   * Bump Standards-Version to 3.9.3 (no changes)
-  * [dhomepage] Handle multiple available packages and multiple homepage
-    URLs (Closes: #664868)
+  * [dhomepage]
+     - Handle multiple available packages and multiple homepage
+       URLs (Closes: #664868)
   * [which-pkg-broke]
-    - Show time info for all installed "Multi-Arch: same" packages
-      (Closes: #658846)
-    - No more swallows all exceptions (Closes: #654458)
+     - Show time info for all installed "Multi-Arch: same" packages
+       (Closes: #658846)
+     - No more swallows all exceptions (Closes: #654458)
 
  --
 
