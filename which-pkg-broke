@@ -17,7 +17,7 @@ def pkgdeps(pkg):
         elts = map(strip, myline.split(':'))
         if len(elts) == 2:
             how, pkg = elts
-             if how in ('Depends', 'PreDepends'):
+            if how in ('Depends', 'PreDepends'):
                 deps.append(pkg)
         myline = outstr.readline()
     return deps

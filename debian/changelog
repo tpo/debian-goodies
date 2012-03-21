@@ -1,3 +1,10 @@
+debian-goodies (0.26) unstable; urgency=low
+
+  * Remove extra space from which-pkg-broke which introduced a syntax
+    error (Closes: #396786)
+
+ -- Javier Fernandez-Sanguino Pen~a <jfs@computer.org>  Fri,  3 Nov 2006 00:53:17 +0100
+
 debian-goodies (0.25) unstable; urgency=low
 
   * Depend on dctrl-tools since grep-dctrl is a transitional package, keep
