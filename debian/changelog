@@ -1,3 +1,18 @@
+debian-goodies (0.37) unstable; urgency=low
+
+  * checkrestart:
+      - Do not complain about deleted files in /tmp, /var/run or /var/log
+        when seen as descriptors (Closes: #441529)
+      - Fix typo in checkrestart (Closes: #444473)
+  * network-test:
+      - Include patch provided by Federico Ceratto which adds command
+        line support, allows the setting of a verbosity level and makes
+        it possible to log to syslog based on that level. This patch
+        is useful if the script is run through init, cron or other
+        task-scheduling tool.
+
+ -- Javier Fernandez-Sanguino Pen~a <jfs@debian.org>  Sun, 14 Oct 2007 23:01:40 +0200
+
 debian-goodies (0.36) unstable; urgency=low
 
   * Exclude /var/run contents from the deleted files check which means

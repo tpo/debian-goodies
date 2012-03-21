@@ -69,6 +69,24 @@
 # - Use arpping to detect another host with our same IP address
 # - Check other TODOs inline in the code
 
+while getopts ":hsv:" Option
+do
+    case $Option in
+    h )	cat <<- EOF
+	Usage: $0 [-s][-v <num>]
+
+	 -s     Also log messages to local3 syslog facility
+	 -v 0   Silent run
+	 -v 1   Show only error messages
+	 -v 2   Show error and warning messages
+	 -v 3   Fully verbose (default)
+
+EOF
+	 exit 0;;
+    v )	VERB=$OPTARG;;
+    s )	LOG=1;;
+    esac
+done
 
 # BEGIN configuration
 # Configure to your needs, these values will be used when
@@ -87,6 +105,23 @@ PATH=/bin:/sbin:/usr/bin:/usr/sbin
 LC_ALL=C
 export PATH LC_ALL
 
+# error reporting and logging functions
+info () {
+    [ "$VERB" -gt 2 ] && echo "INFO: $1"
+    [ "$VERB" -gt 2 ] && [ "$LOG" ] && logger -p local3.info "$0 INFO: $1"
+}
+
+warn () {
+    [ "$VERB" -gt 1 ] && echo "WARN: $1"
+    [ "$VERB" -gt 1 ] && [ "$LOG" ] && logger -p local3.warn "$0 WARN: $1"
+}
+
+err () {
+    [ "$VERB" -gt 0 ] && echo "ERR: $1" >&2
+    [ "$VERB" -gt 0 ] && [ "$LOG" ] && logger -p local3.err "$0 ERR: $1"
+}
+
+
 # Check if all commands we need are available
 # NOTE:  if using nslookup add "nslookup dnsutils"
 ( echo -e "netstat net-tools\nifconfig net-tools\n\
@@ -95,7 +130,7 @@ arp net-tools\nip iproute\nhost host|bind9-host\nmktemp debianutils\n\
 nc netcat" | 
 while read cmd package; do
 if ! `which $cmd 2>/dev/null >&2`; then
-	echo "$cmd is not available! (please install $package)" >&2
+	err "$cmd is not available! (please install $package)" 
 	exit 1
 fi
 done ) || exit 1
@@ -103,7 +138,7 @@ done ) || exit 1
 ( echo -e "ethtool ethtool" |
 while read cmd package; do
 if ! `which $cmd 2>/dev/null >&2`; then
-	echo "$cmd is not available (consider installing $package)" >&2
+	warn "$cmd is not available (consider installing $package)" 
 	exit 1
 fi
 done )
@@ -115,7 +150,7 @@ MIITOOL=/sbin/mii-tool
 # Other needs
 # We need /proc/net
 if [ ! -d /proc/net ] ; then
-	echo "/proc is not available! Please mount it ('mount -t /proc')" >&2
+	err "/proc is not available! Please mount it ('mount -t /proc')"
 	exit 1
 fi
 
@@ -126,11 +161,11 @@ defaultif=`netstat -nr |grep ^0.0.0.0 | awk '{print $8}' | head -1`
 defaultroutes=`netstat -nr |grep ^0.0.0.0 | wc -l`
 if [ -z "$defaultif" ] ; then
 	defaultif=none
-	echo "WARN: This system does not have a default route"
+	warn "This system does not have a default route"
 elif [ "$defaultroutes" -gt 1 ] ; then
-	echo "WARN: This system has more than one default route"
+	warn "This system has more than one default route"
 else 
-	echo "INFO: This system has exactly one default route"
+	info "This system has exactly one default route"
 fi
 
 
@@ -144,16 +179,16 @@ check_local () {
 # Check 127.0.0.1  instead (not everybody uses this IP address however,
 # although its the one commonly used)
 			if  ! check_host 127.0.0.1 1; then
-				echo "ERR: Cannot ping localhost (127.0.0.1), loopback is broken in this system"
+				err "Cannot ping localhost (127.0.0.1), loopback is broken in this system"
 			else
-				echo "ERR: Localhost is not answering but 127.0.0.1, check /etc/hosts and verify localhost points to 127.0.0.1"
+				err "Localhost is not answering but 127.0.0.1, check /etc/hosts and verify localhost points to 127.0.0.1"
 			fi
 		else
-		 echo "INFO: Loopback interface is working properly"
+		 info "Loopback interface is working properly"
 		fi
 			
 	else
-		echo "ERR: There is no loopback interface in this system"
+		err "There is no loopback interface in this system"
 		status=1
 	fi
 	status=0
@@ -235,20 +270,20 @@ check_if () {
 # Print results
 	if [ $status -ne 0 ] ; then
 		if  [ "$ifname" = "$defaultif" ] ; then
-			echo "ERR: The $ifname interface that is associated with your default route has no link!"
+			err "The $ifname interface that is associated with your default route has no link!"
 		else 
-	                echo "WARN: Interface $ifname does not have link"
+	                warn "Interface $ifname does not have link"
 		fi
 	fi
 # Find IP addresses for $ifname
 	inetaddr=`ip addr show $ifname | grep inet | awk '{print $2}'`
 	if [ -z "$inetaddr" ] ; then
-		echo "WARN: The $ifname interface does not have an IP address assigned"
+		warn "The $ifname interface does not have an IP address assigned"
 		status=1
 	else
 # TODO: WARN if more than 2 IP addresses?
 		echo $inetaddr | while read ipaddr; do
-			echo "INFO: The $ifname interface has IP address $ipaddr assigned"
+			info "The $ifname interface has IP address $ipaddr assigned"
 		done
 	fi
 
@@ -262,24 +297,24 @@ check_if () {
 # TODO: Check also frames and collisions, to detect faulty cables
 # or network devices (cheap hubs)
 	if [ "$txpkts" -eq 0 ] && [ "$rxpkts" -eq 0 ] ; then
-		echo "ERR: The $ifname interface has not tx or rx any packets. Link down?"
+		err "The $ifname interface has not tx or rx any packets. Link down?"
 		status=1
 	elif  [ "$txpkts" -eq 0 ]; then
-		echo "WARN: The $ifname interface has not transmitted any packets."
+		warn "The $ifname interface has not transmitted any packets."
 	elif [ "$rxpkts" -eq 0 ] ; then
-		echo "WARN: The $ifname interface has not received any packets."
+		warn "The $ifname interface has not received any packets."
 	else
-		echo "INFO: The $ifname interface has tx and rx packets."
+		info "The $ifname interface has tx and rx packets."
 	fi
 # TODO: It should be best if there was a comparison with tx/rx packets.
 # a few errors are not uncommon if the card has been running for a long
 # time. It would be better if a relative comparison was done (i.e.
 # less than 1% ok, more than 20% warning, over 80% major issue, etc.)
 	if [ "$txerrors" -ne 0 ]; then
-		echo "WARN: The $ifname interface has tx errors."
+		warn "The $ifname interface has tx errors."
 	fi
 	if [ "$rxerrors" -ne 0 ]; then
-                echo "WARN: The $ifname interface has rx errors."
+                warn "The $ifname interface has rx errors."
 	fi
 	return $status
 }
@@ -294,16 +329,16 @@ check_netif () {
                 # twice.
 		if [ -n "`echo $status | grep NO-CARRIER`" ] ; then
 			if  [ "$ifname" = "$defaultif" ] ; then
-				echo "ERR: The $ifname interface that is associated with your default route is down!"
+				err "The $ifname interface that is associated with your default route is down!"
 				status=1
 			elif  [ "$ifname" = "lo"  ] ; then
-				echo "ERR: Your lo interface is down, this might cause issues with local applications (but not necessarily with network connectivity)"
+				err "Your lo interface is down, this might cause issues with local applications (but not necessarily with network connectivity)"
 			else
-				echo "WARN: The $ifname interface is down"
+				warn "The $ifname interface is down"
 			fi
 		else
 		# Check network routes associated with this interface
-			echo "INFO: The $ifname interface is up"
+			info "The $ifname interface is up"
 			check_if $ifname
 			check_netroute $ifname
 		fi
@@ -319,7 +354,7 @@ check_netroute () {
 	# For each gw that is not the default one, ping it
 		if [ "$gw" != "0.0.0.0" ] ; then
 			if ! check_router $gw  ; then
-				echo "ERR: The default route is not available since the default router is unreachable"
+				err "The default route is not available since the default router is unreachable"
 			fi
 		fi
 	done
@@ -334,16 +369,16 @@ check_router () {
 # see if we have an arp. We use 5 packets since it is in our local network.
 	ping -n -q -c 5 "$router" >/dev/null 2>&1 
 	if [ "$?" -ne 0 ]; then
-		echo "WARN: Router $router does not answer to ICMP pings"
+		warn "Router $router does not answer to ICMP pings"
 # Router does not answer, check arp
 		routerarp=`arp -n | grep "^$router" | grep -v incomplete`
 		if [ -z "$routerarp" ] ; then
-			echo "ERR: We cannot retrieve a MAC address for router $router"
+			err "We cannot retrieve a MAC address for router $router"
 			status=1
 		fi
 	fi
 	if [ "$status" -eq 0 ] ; then
-		echo "INFO: The router $router is reachable"
+		info "The router $router is reachable"
 	fi
 	return $status
 }
@@ -363,10 +398,10 @@ check_host () {
 	status=0
 	ping -n -q -c $COUNT "$host" >/dev/null 2>&1 
 	if [ "$?" -ne 0 ]; then
-		echo "WARN: Host $host does not answer to ICMP pings"
+		warn "Host $host does not answer to ICMP pings"
 		status=1
 	else
-		echo "INFO: Host $host answers to ICMP pings"
+		info "Host $host answers to ICMP pings"
 	fi
 	return $status
 }
@@ -376,13 +411,13 @@ check_dns () {
 	status=1
 	nsfound=0
 	nsok=0
-        tempfile=`mktemp -t tmptestnet.XXXXXX` || { echo "ERR: Cannot create temporary file! Aborting! " >&2 ; exit 1; }
+        tempfile=`mktemp -t tmptestnet.XXXXXX` || { err "Cannot create temporary file! Aborting! " ; exit 1; }
 	trap " [ -f \"$tempfile\" ] && /bin/rm -f -- \"$tempfile\"" 0 1 2 3 13 15
 	cat /etc/resolv.conf | grep -v ^# | grep nameserver | 
 	awk '/nameserver/ { for (i=2;i<=NF;i++) {  print $i ; } }'  >$tempfile
 	for nameserver in `cat $tempfile`;  do
 		nsfound=$(( $nsfound + 1 ))
-		echo "INFO: This system is configured to use nameserver $nameserver"
+		info "This system is configured to use nameserver $nameserver"
 		check_host $nameserver 5
 		if check_ns $nameserver ; then
 			nsok=$(( $nsok +1 ))
@@ -395,19 +430,19 @@ check_dns () {
 	/bin/rm -f -- "$tempfile"
 	trap  0 1 2 3 13 15
 	if [ "$nsfound" -eq 0 ] ; then
-		echo "ERR: The system does not have any nameserver configured"	
+		err "The system does not have any nameserver configured"	
 	else
 		if [ "$status" -ne 0 ] ; then
 			if [ "$nsfound" -eq 1 ] ; then
-				echo -e "ERR: There is one nameserver configured for this system but it does not work properly"
+				err "There is one nameserver configured for this system but it does not work properly"
 			else
-				echo "ERR: There are $nsfound nameservers configured for this system and none of them works properly"
+				err "There are $nsfound nameservers configured for this system and none of them works properly"
 			fi
 		else
 			if [ "$nsfound" -eq 1 ] ; then
-				echo "INFO: The nameserver configured for this system works properly"
+				info "The nameserver configured for this system works properly"
 			else
-				echo "INFO: There are $nsfound nameservers is configured for this system and $nsok are working properly"
+				info "There are $nsfound nameservers is configured for this system and $nsok are working properly"
 			fi
 		fi
 	fi
@@ -425,24 +460,24 @@ check_ns () {
 # Using dnscheck:
 	dnscheck=`host -t A $CHECK_HOST $nameserver 2>&1 | tail -1`
 	if [ -n "`echo $dnscheck |grep NXDOMAIN`" ] ; then
-		echo "ERR: Dns server $nameserver does not resolv properly"
+		err "Dns server $nameserver does not resolv properly"
 	elif [ -n "`echo $dnscheck | grep \"timed out\"`" ] ; then
-		echo "ERR: Dns server $nameserver is not available"
+		err "Dns server $nameserver is not available"
 	elif [ -z "`echo $dnscheck | egrep \"$CHECK_RESULT\"`" ] ; then
-		echo "WARN: Dns server $nameserver did not return the expected result for $CHECK_HOST"
+		warn "Dns server $nameserver did not return the expected result for $CHECK_HOST"
 	else
-		echo "INFO: Dns server $nameserver resolved correctly $CHECK_HOST"
+		info "Dns server $nameserver resolved correctly $CHECK_HOST"
 		status=0
 	fi
 
 # Using dlint
 #	dlint $CHECK_HOST @$nameserver >/dev/null 2>&1
 #	if [ $? -eq 2 ] ; then
-#		echo "ERR: Dns server $nameserver does not resolv properly"
+#		err "Dns server $nameserver does not resolv properly"
 #	elif [ $? -ne 0 ]; then
-#		echo "ERR: Unexpected error when testing $nameserver"
+#		err "Unexpected error when testing $nameserver"
 #	else
-#		echo "INFO: Dns server $nameserver resolved correctly $CHECK_HOST"
+#		info "Dns server $nameserver resolved correctly $CHECK_HOST"
 #		status=0
 #	fi
 
@@ -452,9 +487,9 @@ check_ns () {
 check_conn () {
 # Checks network connectivity
 	if ! check_host $CHECK_WEB_HOST >/dev/null ; then
-		echo "WARN: System does not seem to reach Internet host $CHECK_WEB_HOST through ICMP"
+		warn "System does not seem to reach Internet host $CHECK_WEB_HOST through ICMP"
 	else
-		echo "INFO: System can reach Internet host $CHECK_WEB_HOST"
+		info "System can reach Internet host $CHECK_WEB_HOST"
 	fi
 	status=0
 # Check web access, using nc
@@ -465,10 +500,10 @@ check_conn () {
 #   fooled by transparent proxies)
 	echo -e "HEAD / HTTP/1.0\n\n" |nc -w 20 $CHECK_WEB_HOST $CHECK_WEB_PORT >/dev/null 2>&1
 	if [ $? -ne 0 ] ; then
-		echo "ERR: Cannot access web server at Internet host $CHECK_WEB_HOST"
+		err "Cannot access web server at Internet host $CHECK_WEB_HOST"
 		status=1
 	else
-		echo "INFO: System can access web server at Internet host $CHECK_WEB_HOST"
+		info "System can access web server at Internet host $CHECK_WEB_HOST"
 	fi
 	return $status
 }

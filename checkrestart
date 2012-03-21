@@ -161,7 +161,7 @@ def main():
         sys.exit(0)
 
     # TODO - consider putting this in a --verbose option
-    print "These processes do not seem to han an associated init script to restart them:"
+    print "These processes do not seem to have an associated init script to restart them:"
     for package in nonrestartable:
         print package.name + ':'
         for process in package.processes:
@@ -322,6 +322,19 @@ class Process:
             # Notice that if it begins with SYSV or /dev/zero
             # it is not a deleted file and the descriptor was popped already
             # (see above)
+            # We don't care about log files
+            if f.startswith('/var/log/'):
+	    	continue
+            # Or about files under temporary locations
+            if f.startswith('/var/run/'):
+	    	continue
+            # Or about files under /tmp
+            if f.startswith('/tmp/'):
+	    	continue
+            # Or /dev/zero
+            if f.startswith('/dev/zero'):
+	    	continue
+            # We care about any other DEL files
             if re.compile("DEL").search(f):
 	    	return 1
 	for f in self.links:
