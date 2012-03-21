@@ -1,0 +1,64 @@
+=head1 NAME
+
+dgrep, degrep, dfgrep, dzgrep -- grep through files belonging to an installed Debian package
+
+=head1 SYNOPSIS
+
+B<dgrep> [I<most grep options>] I<pattern> I<package>...
+
+B<dgrep> B<--help>
+
+=head1 DESCRIPTION
+
+B<dgrep> invokes grep(1) on each file in one or more installed Debian 
+packages.
+
+It passes the I<package> argument(s) to dglob(1) to retrieve a list of files 
+in those packages. You can use POSIX regular expressions for the package 
+names.
+
+If B<dgrep> is invoked as B<degrep>, B<dfgrep> or B<dzgrep> then egrep(1), 
+fgrep(1) or zgrep(1) is used instead of B<grep>.
+
+=head1 OPTIONS
+
+B<dgrep> supports most of grep(1)'s options. Please refer to your 
+B<grep> documentation (i.e. the manpage or the texinfo manual) for
+a complete listing. Only a few options are excluded because they do not 
+conform with the intended behaviour, see the list below.
+
+=head2 Options of grep that are not supported by dgrep
+
+=over 4
+
+=item B<-r>, B<--recursive>, B<-d> I<recurse>, B<--directories>=I<recurse>
+
+=item B<-d> I<read>, B<--directories>=I<read>
+
+B<dgrep> searches only in the "normal" files of a package. It skips all
+directories and symlinks. Therefor the options of
+grep that are specific to directories are not supported.
+
+=back
+
+=head1 AUTHOR
+
+Matt Zimmerman <mdz@debian.org>
+
+This manpage was written by Frank Lichtenheld <frank@lichtenheld>.
+
+=head1 COPYRIGHT AND LICENCE
+
+Copyright (C) 2001 Matt Zimmerman <mdz@debian.org>.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2, or (at your option)
+any later version.
+
+On Debian systems, a copy of the GNU General Public License may be
+found in /usr/share/common-licenses/GPL.
+
+=head1 SEE ALSO
+
+grep(1), egrep(1), fgrep(1), zgrep(1), dglob(1), regex(7), dpkg(8)

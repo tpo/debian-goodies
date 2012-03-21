@@ -1,0 +1,10 @@
+#!/bin/sh -e
+
+for pkgspec in $*; do
+  version=$(apt-get -q2 -s --reinstall install "$pkgspec" | grep ^Inst | sed -ne '$s/^.*\[\(.*\)\].*$/\1/p')
+  echo "($pkgspec -> $version)"
+  aptdata=$(apt-get -q2 --print-uris --reinstall install "$pkgspec" | tail -1)
+  url=$(echo "$aptdata" | sed -e "s/^'\([^']*\)'.*$/\1/")
+  file=$(echo "$aptdata" | sed -e "s/^'[^']*' \([^ ]*\).*$/\1/")
+  curl "$url" > "$file"
+done

@@ -1,0 +1,171 @@
+debian-goodies (0.23) unstable; urgency=low
+
+  * Man page for popbugs from Jochen Voss <voss@debian.org> (Closes:
+    #227094)
+
+ -- Matt Zimmerman <mdz@debian.org>  Wed, 14 Jan 2004 21:10:42 -0800
+
+debian-goodies (0.22) unstable; urgency=low
+
+  * Fix typo, improve description in dglob(1) (Closes: #224561)
+
+ -- Matt Zimmerman <mdz@debian.org>  Fri, 19 Dec 2003 23:38:26 -0800
+
+debian-goodies (0.21) unstable; urgency=low
+
+  * Fix program name in popbugs usage message (Closes: #224490)
+
+ -- Matt Zimmerman <mdz@debian.org>  Fri, 19 Dec 2003 08:03:59 -0800
+
+debian-goodies (0.20) unstable; urgency=low
+
+  * Updated man page for dpigs, and new man page for dglob, from Frank
+    Lichtenheld <frank@lichtenheld.de> (Closes: #224394)
+  * Enhance dglob to accept some grep-dctrl options, and update the man
+    page appropriately
+
+ -- Matt Zimmerman <mdz@debian.org>  Thu, 18 Dec 2003 09:54:30 -0800
+
+debian-goodies (0.19) unstable; urgency=low
+
+  * Actually install those nice man pages (really Closes: #163823)
+
+ -- Matt Zimmerman <mdz@debian.org>  Wed, 17 Dec 2003 17:48:36 -0800
+
+debian-goodies (0.18) unstable; urgency=low
+
+  * Include man pages for debget, dgrep and dpigs from Frank Lichtenheld
+    <frank@lichtenheld.de> (Closes: #163823)
+  * Implement option parsing in dpigs, because it confuses everyone to
+    pass options to head(1) directly (Closes: #212926)
+  * Fix checkrestart to deal with the garbage that comes from
+    /proc/pid/exe sometimes (null bytes, etc.)
+  * Teach checkrestart about dpkg's habit of spitting out diversion
+    information in response to a --search query (Closes: #211785)
+
+ -- Matt Zimmerman <mdz@debian.org>  Tue, 16 Dec 2003 17:12:50 -0800
+
+debian-goodies (0.17) unstable; urgency=low
+
+  * Remove empty /usr/sbin directory (Closes: #205450)
+  * Enhance debian-goodies to give a hint about needing popularity-contest
+    if the data isn't present, and automatically launch sensible-browser
+    (use "popbugs -o -" to get the old behaviour) (Closes: #205662)
+  * Depends: python (>= 2.3), as we use NamedTemporaryFile
+
+ -- Matt Zimmerman <mdz@debian.org>  Fri, 15 Aug 2003 21:35:16 -0400
+
+debian-goodies (0.16) unstable; urgency=low
+
+  * Fix another buglet in popbugs where it would incorrectly parse
+    bugscan's inconsistent HTML
+
+ -- Matt Zimmerman <mdz@debian.org>  Thu, 14 Aug 2003 12:26:16 -0400
+
+debian-goodies (0.15) unstable; urgency=low
+
+  * Fix a bug in popbugs where it would misparse things when the block was
+    surrounded by a <font> tag
+
+ -- Matt Zimmerman <mdz@debian.org>  Wed, 13 Aug 2003 17:34:56 -0400
+
+debian-goodies (0.14) unstable; urgency=low
+
+  * Minor formatting changes to checkrestart 
+  * New program, popbugs, which sorts and filters the RC bug list based on
+    data from popularity-contest
+  * Suggests: popularity-contest
+
+ -- Matt Zimmerman <mdz@debian.org>  Wed, 13 Aug 2003 17:30:59 -0400
+
+debian-goodies (0.13) unstable; urgency=low
+
+  * Fix checkrestart to not fail on certain types of bogus data in /proc,
+    specifically, when readlink() gives ENOENT.
+
+ -- Matt Zimmerman <mdz@debian.org>  Mon, 19 May 2003 19:00:53 -0400
+
+debian-goodies (0.12) unstable; urgency=low
+
+  * Fix typo-bug which caused a lot of false positives in checkrestart
+
+ -- Matt Zimmerman <mdz@debian.org>  Fri,  2 May 2003 16:17:27 -0400
+
+debian-goodies (0.11) unstable; urgency=low
+
+  * s/dpkg-query/dpkg/ on dglob as well
+  * Fix checkrestart to exclude certain common init scripts which don't
+    actually restart a service
+
+ -- Matt Zimmerman <mdz@debian.org>  Fri,  2 May 2003 15:32:49 -0400
+
+debian-goodies (0.10) unstable; urgency=low
+
+  * Modify checkrestart to use dpkg rather than dpkg-query, so that it can be
+    used on stable and does not require a dependency on newer dpkg 
+
+ -- Matt Zimmerman <mdz@debian.org>  Fri,  2 May 2003 10:19:15 -0400
+
+debian-goodies (0.9) unstable; urgency=low
+
+  * Add dependencies on lsof and python 
+
+ -- Matt Zimmerman <mdz@debian.org>  Wed, 30 Apr 2003 14:20:54 -0400
+
+debian-goodies (0.8) unstable; urgency=low
+
+  * New program, checkrestart, which informs about running processes using old
+    versions of upgraded files (such as shared libraries) 
+
+ -- Matt Zimmerman <mdz@debian.org>  Wed, 30 Apr 2003 13:53:25 -0400
+
+debian-goodies (0.7) unstable; urgency=low
+
+  * Add new program, debman, by Colin Watson <cjwatson@debian.org>
+    (Closes: #176295)
+
+ -- Matt Zimmerman <mdz@debian.org>  Sat, 11 Jan 2003 15:12:05 -0500
+
+debian-goodies (0.6) unstable; urgency=low
+
+  * Make debget use curl instead of wget, because it supports file: URIs,
+    which are often used in sources.list. (Closes: #176263)
+
+ -- Matt Zimmerman <mdz@debian.org>  Sat, 11 Jan 2003 12:32:28 -0500
+
+debian-goodies (0.5) unstable; urgency=low
+
+  * Add an explicit --help option for dgrep, so that it doesn't invoke
+    grep with the --help option (Closes: #173430)
+
+ -- Matt Zimmerman <mdz@debian.org>  Tue, 17 Dec 2002 08:42:45 -0500
+
+debian-goodies (0.4) unstable; urgency=low
+
+  * Fix debget to do the right thing if the requested deb has uninstalled
+    dependencies
+
+ -- Matt Zimmerman <mdz@debian.org>  Sun, 15 Dec 2002 19:21:32 -0500
+
+debian-goodies (0.3) unstable; urgency=low
+
+  * Switch debget from using python-apt to calling apt-get.  The things
+    that it really needs aren't exposed by the python-apt API, and this
+    makes it possible to use the same version specifications used with
+    apt-get install (/stable, =1.2.0-1, etc.).  However, it may refuse to
+    work if you have packages in broken states.
+
+ -- Matt Zimmerman <mdz@debian.org>  Sat,  7 Dec 2002 12:11:44 -0500
+
+debian-goodies (0.2) unstable; urgency=low
+
+  * Fix indentation of description (Closes: #162983)
+
+ -- Matt Zimmerman <mdz@debian.org>  Tue,  1 Oct 2002 10:00:32 -0400
+
+debian-goodies (0.1) unstable; urgency=low
+
+  * Initial Release.
+
+ -- Matt Zimmerman <mdz@debian.org>  Sat, 21 Sep 2002 23:19:11 -0400
+

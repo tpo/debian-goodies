@@ -1,0 +1,104 @@
+#! /bin/sh -e
+
+# debman - read a man page from an uninstalled Debian package file (.deb)
+
+# Copyright (C) 2003 Colin Watson <cjwatson@debian.org>
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2, or (at your option)
+# any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
+# 02111-1307, USA.
+
+usage () {
+    if [ "$1" -eq 1 ]; then
+        FD=2
+    else
+        FD=1
+    fi
+    cat >&$FD <<EOF
+Usage: debman [options] [-- man(1) options] <man page name> ...
+
+Options should be exactly one of:
+        -f package.deb          read pages from package.deb archive
+        -p package              download .deb for package and read pages
+                                from there
+EOF
+    exit "$1"
+}
+
+ARGS=`getopt -l help,filename:,package: -o hf:p: -n debman -- "$@"`
+eval set -- "$ARGS"
+
+FILENAME=
+PACKAGE=
+
+while :; do
+    case "$1" in
+        -h|--help)
+            usage 0
+            ;;
+        -f|--filename)
+            FILENAME="$2"
+            shift 2
+            ;;
+        -p|--package)
+            PACKAGE="$2"
+            shift 2
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            echo "debman: Internal error in option parsing" >&2
+            exit 1
+            ;;
+    esac
+done
+
+if ( [ -n "$FILENAME" ] && [ -n "$PACKAGE" ] ) || \
+   ( [ -z "$FILENAME" ] && [ -z "$PACKAGE" ] ); then
+    usage 1
+fi
+
+if test $# -lt 1; then
+    usage 1
+fi
+
+# Directory names are duplicated with and without ./ in order to cope with
+# old .debs whose data.tar.gz components had a slightly different format.
+MANDIRS='usr/share/man usr/X11R6/man ./usr/share/man ./usr/X11R6/man'
+
+TEMPDIR=`mktemp -dt debman.XXXXXXXXXX`
+trap 'rm -rf "$TEMPDIR"' EXIT ERR HUP INT QUIT TERM
+
+if [ -n "$PACKAGE" ]; then
+    (cd "$TEMPDIR" && debget "$PACKAGE")
+    # There should be at most one file in $TEMPDIR now.
+    FILENAME="`find \"$TEMPDIR\" -name \*.deb -print`"
+    if [ -z "$FILENAME" ]; then
+        echo "Failed to fetch package $PACKAGE; exiting." >&2
+        exit 1
+    fi
+fi
+
+# Ignore errors from tar (though not dpkg). They'll generally just be of the
+# form "tar: usr/share/man: Not found in archive". If they're something
+# else, then man will fail to find the page anyway.
+
+dpkg --fsys-tarfile "$FILENAME" | \
+    (tar -C "$TEMPDIR" -xf - $MANDIRS 2>/dev/null || true)
+
+MANPATH="$TEMPDIR/usr/share/man:$TEMPDIR/usr/X11R6/man" man "$@"
+
+# vi: expandtab

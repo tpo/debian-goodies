@@ -1,0 +1,52 @@
+#!/bin/sh
+
+set -e
+
+Usage() {
+    echo "Usage: dpigs [options]"
+    echo
+    echo "Options:"
+    echo "  -n, --lines=N"
+    echo "    Display the N largest packages on the system (default 10)."
+    echo "  -s, --status=status-file"
+    echo "    Use status-file instead of the default dpkg status file."
+    echo "  -h, --help"
+    echo "    Display this message."
+}
+
+LINES=10
+# grep-status provides a default
+STATUS=
+
+OPTS=$(getopt -o n:s:h --long lines:,status:,help -- "$@")
+eval set -- "$OPTS"
+
+while true; do
+    case "$1" in
+        -n|--lines)
+            LINES="$2"
+            shift 2
+            ;;
+        -s|--status)
+            STATUS="$2"
+            shift 2
+            ;;
+        -h|--help)
+            Usage
+            exit 0
+            ;;
+        --)
+            shift
+            break
+            ;;
+        *)
+            Usage
+            exit 1
+            ;;
+    esac
+done
+
+grep-status -nsInstalled-size,Package -F Status ' installed' $STATUS \
+| perl -p00l12 -e 's/\n/ /' \
+| sort -rn \
+| head --lines=$LINES

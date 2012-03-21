@@ -1,0 +1,90 @@
+=head1 NAME
+
+dglob - Expand package names or files matching a pattern
+
+=head1 SYNOPSIS
+
+B<dglob> [B<-a>] I<pattern>
+
+B<dglob> [B<-0>] B<-f> I<pattern>
+
+=head1 DESCRIPTION
+
+B<dglob> searches for packages whose names match a pattern, and can
+either output their names, or a list of the files they contain. Per
+default, only installed packages are matched, unless you use the B<-a>
+option (see L<"OPTIONS">). The list of packages is written to stdout,
+one package per line.
+
+grep-dctrl(1) is used to search the list of packages, so you should
+refer to its documentation for information on how patterns are
+matched.  By default, all packages whose name contains the given
+string will be matched, but several options are available to modify
+this behavior (see L<"OPTIONS">).
+
+If you use dglob with the B<-f> option, all files in the matched packages
+are listed instead of their names. Only existing, plain (i.e. no symlinks,
+directories or other special ones) files are listed. The filenames are
+written to stdout, one file per line. You can use the B<-0> option to
+get the filenames separated by '\0' instead of a newline.
+
+=head1 OPTIONS
+
+B<dglob> suppports the following options:
+
+=over 4
+
+=item B<-a>
+
+Search through all available packages, not just installed ones.
+
+=item B<-f>
+
+List all files in the matched packages. This list only installed (i.e. 
+locallly existing) files from installed packages, so using it together
+with B<-a> is rather pointless.
+
+=item B<-0>
+
+When listing files (with B<-f>) use '\0' as a separator instead of
+a newline. When specified without B<-f>, this options does nothing.
+
+=item B<-r>, B<-e>, B<-i>, B<-X>, B<-v>
+
+These options are passed directly to grep-dctrl(1) to modify how the
+pattern is matched.  See grep-dctrl(1).
+
+=back
+
+=head1 FILES
+
+=over 4
+
+=item F</var/lib/dpkg/status>
+
+dpkg(8) status file, which serves as source for the list of available
+and installed packages.
+
+=back
+
+=head1 AUTHOR
+
+Matt Zimmerman <mdz@debian.org>
+
+This manpage was written by Frank Lichtenheld <frank@lichtenheld>.
+
+=head1 COPYRIGHT AND LICENCE
+
+Copyright (C) 2001 Matt Zimmerman <mdz@debian.org>.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2, or (at your option)
+any later version.
+
+On Debian systems, a copy of the GNU General Public License may be
+found in /usr/share/common-licenses/GPL.
+
+=head1 SEE ALSO
+
+grep-dctrl(1), dpkg(8)

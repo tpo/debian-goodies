@@ -1,0 +1,136 @@
+#!/usr/bin/python
+
+#
+#      popbugs - Find RC bugs in packages you commonly use
+#      Matt Zimmerman <mdz@debian.org> 2001
+#
+
+import sys
+import re
+import os
+import urllib2
+import tempfile
+import getopt
+
+usage = '''Usage: popbugs [{-o|--output=} {outputfile|-}] [popularity-contest log]\n'''
+
+popconfile = '/var/log/popularity-contest'
+bugurl = 'http://bugs.debian.org/release-critical/other/all.html'
+outputfile = None
+
+try:
+    opts, args = getopt.getopt(sys.argv[1:], "ho:",
+                               ["help","output="])
+except getopt.GetoptError:
+    sys.stderr.write(usage)
+    sys.exit(2)
+for o, a in opts:
+    if o in ("-h", "--help"):
+        sys.stdout.write(usage)
+        sys.exit()
+    elif o in ("-o", "--output"):
+        outputfile = a
+
+if len(args) > 1:
+    popconfile = args[0]
+else:
+    if not os.path.exists(popconfile):
+        if not os.path.exists('/usr/sbin/popularity-contest'):
+            sys.stderr.write('''
+The popularity-contest package does not appear to be installed.
+This program requires the data collected from popularity-contest
+in order to work.
+
+''')
+            sys.exit(1)
+
+        sys.stderr.write('''
+There is no popularity-contest data present on your system.  This
+probably means that popularity-contest has not yet run since it
+was installed.  Try running /etc/cron.weekly/popularity-contest by
+hand to collect some data.
+
+''')
+        sys.exit(1)
+    
+if outputfile == None:
+    output = tempfile.NamedTemporaryFile(suffix='.html')
+    outputfile = output.name
+    view = 1
+elif outputfile == '-':
+    output = sys.stdout
+    view = 0
+else:
+    output = open(outputfile, 'w')
+    view = 0
+
+class Package:
+    def __init__(self, name, atime):
+        self.name = name
+        self.atime = atime
+
+packages = {}
+pkglist = []
+popcon = open(popconfile,'r')
+for line in popcon.readlines():
+    if len(line) == 0 or line.find(':') != -1:
+        continue
+
+    fields = line.split()
+    if len(fields) != 4:
+        continue
+    if (fields[0] == 'POPULARITY-CONTEST-0' or
+        fields[0] == 'END-POPULARITY-CONTEST-0'):
+        continue
+    
+    (atime, ctime, package, pathname) = fields
+#    if pathname == '<NOFILES>' or pathname == '<RECENT-CTIME>':
+#        continue
+    
+    packages[package] = Package(package,atime)
+    pkglist.append(packages[package])
+    
+popcon.close()
+
+page = urllib2.urlopen(bugurl).readlines()
+
+while page:
+    line = page.pop(0)
+    output.write(line)
+    if line.startswith('<pre>'):
+        break
+
+packagere = re.compile('^<a name="([^"]+)"><strong>Package:.*')
+while page:
+    m = packagere.match(page[0])
+    if m:
+        html = ''
+        while page:
+            line = page.pop(0)
+            html += line
+
+            if line == '\n' or (page and packagere.match(page[0])):
+                # another paragraph started with no newline
+                break
+
+        pkgname = m.group(1)
+
+        if pkgname in packages:
+            packages[pkgname].html = html
+    else:
+        if page[0].startswith('</pre>'):
+            break
+        page.pop(0)
+
+pkglist.sort(lambda a,b: -cmp(a.atime,b.atime))
+for package in pkglist:
+    if hasattr(package,'html'):
+        output.write(package.html)
+        output.write('\n')
+
+output.writelines(page)
+
+output.flush()
+
+if view:
+    os.system('sensible-browser file://' + outputfile)

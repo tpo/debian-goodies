@@ -1,0 +1,21 @@
+There is no substantial documentation yet.  Volunteer authors are
+more than welcome.  Here are some examples to get you started.
+
+# Search all files in specified packages for a regex
+$ dgrep <pattern> <package>...
+
+# Search through all files in all installed packages for a regex
+$ dgrep <pattern> '.*'
+
+# Same, but also search inside compressed files
+$ dzgrep <pattern> '.*'
+
+# Calculate the total disk space usage of all files contained in all
+# installed packages whose names begin with 'lib'
+$ dglob -0f ^lib | xargs -0 du -c | awk '{sum += $1} END {print sum}'
+
+# Fetch most recent version of package
+$ debget <package>
+
+# Fetch a specific version of package
+$ debget <package>=<version>

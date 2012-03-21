@@ -1,0 +1,30 @@
+Source: debian-goodies
+Section: utils
+Priority: optional
+Maintainer: Matt Zimmerman <mdz@debian.org>
+Build-Depends-Indep: debhelper (>> 3.0.0)
+Standards-Version: 3.5.2
+
+Package: debian-goodies
+Architecture: all
+Depends: grep-dctrl, curl, python (>= 2.3), lsof
+Suggests: popularity-contest
+Conflicts: debget
+Replaces: debget
+Description: Small toolbox-style utilities for Debian systems
+ These programs are designed to integrate with standard shell tools,
+ extending them to operate on the Debian packaging system.
+ .
+  dgrep  - Search all files in specified packages for a regex
+  dglob  - Generate a list of package names which match a pattern
+ .
+ These are also included, because they are useful and don't justify
+ their own packages:
+ .
+  debget       - Fetch a .deb for a package in APT's database
+  dpigs        - Show which installed packages occupy the most space
+  debman       - Easily view man pages from a binary .deb without extracting
+  checkrestart - Help to find and restart processes which are using old
+                 versions of upgraded files (such as libraries)
+  popbugs      - Display a customized release-critical bug list based on
+                 packages you use (using popularity-contest data)

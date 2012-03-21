@@ -1,0 +1,40 @@
+.TH DEBMAN 1 "11 January 2003"
+.SH NAME
+debman \- read man pages from uninstalled packages
+.SH SYNOPSIS
+.B debman
+.B \-f
+.I filename
+.RB [ \-\-
+.IR "man(1) options" ]
+.I name
+.br
+.B debman
+.B \-p
+.I package
+.RB [ \-\-
+.IR "man(1) options" ]
+.I name
+.SH DESCRIPTION
+.B debman
+extracts a Debian package into a temporary directory and displays manual
+pages from it.
+If the
+.B \-f
+option is used, it will use a local
+.I .deb
+file; if the
+.B \-p
+option is used, it will download the named package using
+.BR debget .
+.SH ENVIRONMENT
+.B debman
+intentionally ignores any
+.RB $ MANPATH
+environment variable that might be set, and constructs its own such that
+only manual pages within the package will be displayed.
+.SH AUTHOR
+.B debman
+was written by Colin Watson <cjwatson@debian.org>.
+.SH "SEE ALSO"
+.BR debget (1)

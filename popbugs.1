@@ -1,0 +1,44 @@
+.\" popbugs.1 - find RC bugs in packages you commonly use
+.\" Copyright (C) 2004 Jochen Voss
+.\" Everybody is allowed to distribute this manual page,
+.\" to modify it, and to distribute modifed versions of it.
+.TH popbugs 1 "January 10 2004" "debian\-goodies" "debian\-goodies"
+.SH NAME
+popbugs \- find RC bugs in packages you commonly use
+.SH SYNOPSIS
+.B popbugs
+.RI [ options "] [" "popularity\-contest log" ]
+.SH DESCRIPTION
+The
+.B popbugs
+program fetches the list of release critical bugs from the
+Debian bug tracking system on the internet.
+It correlates the bug log with the
+.B popularity\-contest
+data from your system to obtain a list of release critical bugs
+in packages, which are commonly used on your system.
+Normally this list is displayed in a web browser.
+Helping to resolve these bugs is a good idea,
+if you want to see your favourite programs in the next
+stable release of Debian.
+.SH OPTIONS
+.TP
+.BI \-h
+.TP
+.BI \-\-help
+Show a very short usage message.
+.TP
+.BI \-o outputfile
+.TP
+.BI \-\-output= outputfile
+Place the output in
+.I outputfile
+instead of displaying it in a browser.
+.SH SEE ALSO
+.BR rc\-alert (1),
+.BR popularity\-contest (8)
+.SH AUTOR
+The
+.B popbugs
+program is copyright \(co 2001 Matt Zimmerman <mdz@debian.org>.
+This manual page is copyright \(co 2004  Jochen Vo\(ss <voss@debian.org>.

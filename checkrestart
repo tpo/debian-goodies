@@ -1,0 +1,131 @@
+#!/usr/bin/python
+
+import sys
+import os
+import re
+
+if os.getuid() != 0:
+    sys.stderr.write('This program must be run as root\n')
+    sys.stderr.write('in order to collect information about all open file descriptors\n')
+    sys.exit(1)
+
+def main():
+    process = None
+    processes = {}
+    for line in os.popen('lsof +L1 -F n').readlines():
+        field, data = line[0], line[1:-1]
+
+        if field == 'p':
+            process = processes.setdefault(data,Process(int(data)))
+        elif field == 'n':
+            process.files.append(data)
+
+    toRestart = filter(lambda process: process.needsRestart(),
+                       processes.values())
+    print "Found %d processes using old versions of upgraded files" % len(toRestart)
+
+    if len(toRestart) == 0:
+        sys.exit(0)
+
+    programs = {}
+    for process in toRestart:
+        programs.setdefault(process.program, [])
+        programs[process.program].append(process)
+
+    print "(%d distinct programs)" % len(programs)
+
+    packages = {}
+    #dpkgQuery = 'dpkg-query --search ' + ' '.join(programs.keys())
+    diverted = None
+    dpkgQuery = 'dpkg --search ' + ' '.join(programs.keys())
+    for line in os.popen(dpkgQuery).readlines():
+        if line.startswith('local diversion'):
+            continue
+        
+        m = re.match('^diversion by (\S+) (from|to): (.*)$', line)
+        if m:
+            if m.group(2) == 'from':
+                diverted = m.group(3)
+                continue
+            if not diverted:
+                raise 'Weird error while handling diversion'
+            packagename, program = m.group(1), diverted
+        else:
+            packagename, program = line[:-1].split(': ')
+
+        packages.setdefault(packagename,Package(packagename))
+        packages[packagename].processes.extend(programs[program])
+
+    print "(%d distinct packages)" % len(packages)
+
+    if len(packages) == 0:
+        sys.exit(0)
+
+    for package in packages.values():
+        if package == 'util-linux':
+            continue
+        #dpkgQuery = 'dpkg-query --listfiles ' + package.name
+        dpkgQuery = 'dpkg --listfiles ' + package.name
+        for line in os.popen(dpkgQuery).readlines():
+            path = line[:-1]
+            if path.startswith('/etc/init.d/'):
+                if path.endswith('.sh'):
+                    continue
+                package.initscripts.append(path)
+
+    restartable = []
+    nonrestartable = []
+    restartCommands = []
+    for package in packages.values():
+        if len(package.initscripts) > 0:
+            restartable.append(package)
+            restartCommands.extend(map(lambda s: s + ' restart',package.initscripts))
+        else:
+            nonrestartable.append(package)
+            
+    print
+    print "Of these, %d seem to contain init scripts which can be used to restart them:" % len(restartable)
+    print '\n'.join(restartCommands)
+    print
+
+    if len(nonrestartable) == 0:
+        sys.exit(0)
+
+    print "Here are the others:"
+    for package in nonrestartable:
+        print package.name + ':'
+        for process in package.processes:
+            print "\t%s\t%s" % (process.pid,process.program)
+
+class Process:
+    def __init__(self, pid):
+        self.pid = pid
+        self.files = []
+
+        try:
+            self.program = self.cleanFile(os.readlink('/proc/%d/exe' % self.pid))
+        except OSError, e:
+            if e.errno != 2:
+                raise
+
+    def cleanFile(self, f):
+        # /proc/pid/exe has all kinds of junk in it sometimes
+        null = f.find('\0')
+        if null != -1:
+            f = f[:null]
+        return re.sub('( \(deleted\)|.dpkg-new).*$','',f)
+
+    def needsRestart(self):
+        for f in self.files:
+            if f.endswith('.dpkg-new'):
+                return 1
+        return 0
+
+class Package:
+    def __init__(self, name):
+        self.name = name
+        self.initscripts = []
+        self.processes = []
+
+if __name__ == '__main__':
+    main()
