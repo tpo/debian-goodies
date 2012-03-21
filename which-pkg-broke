@@ -62,7 +62,7 @@ def what_broke(pname):
             print ljust(p, 54), time.asctime(time.localtime(float(t)))
 
 if (len(sys.argv) != 2 or sys.argv[1][0] == '-'):
-    print "Usage: what-broke <pkg-name>"
+    print "Usage: which-pkg-broke <pkg-name>"
     sys.exit(-1)
 else:
     what_broke(sys.argv[1])
