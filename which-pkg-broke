@@ -1,0 +1,69 @@
+#! /usr/bin/python
+#  which-pkg-broke: help find offending packages when something breaks
+#  Placed in the public domain by Bill Gribble <grib@billgribble.com>
+
+import sys
+import os
+import popen2
+import time
+from string import *
+from stat import *
+
+def pkgdeps(pkg):
+    outstr, instr = popen2.popen4("LC_ALL=C apt-cache depends %s" % pkg)
+    deps = []
+    myline = outstr.readline()
+    while(myline != ''):
+        elts = map(strip, myline.split(':'))
+        if len(elts) == 2:
+            how, pkg = elts
+            if how == 'Depends':
+                deps.append(pkg)
+        myline = outstr.readline()
+    return deps
+
+def alldeps(pkg, ignore):
+    deps = {}
+    imm_deps = pkgdeps(pkg)
+    for i in imm_deps:
+        if ignore.get(i) is None:
+            deps[i] = 1
+            ignore[i] = 1
+            childeps = alldeps(i, ignore)
+            for c in childeps:
+                deps[c] = 1
+                ignore[i] = 1
+
+    dlist = deps.keys()
+    return dlist
+
+def pkginstalltime(pkg):
+    listfile = '/var/lib/dpkg/info/' + pkg + '.list'
+    try:
+        return os.stat(listfile)[ST_MTIME]
+    except:
+        print "Package", pkg, "has no install time info"
+        return None
+
+def what_broke(pname):
+    def sortfun(a, b):
+        return cmp(a[1], b[1])
+
+    pkgs = [ pname ]
+    pkgs.extend(alldeps(sys.argv[1], {}))
+
+    itimes = []
+    for p in pkgs:
+        itimes.append([p, pkginstalltime(p)])
+    itimes.sort(sortfun)
+    for i in itimes:
+        p, t = i
+        if t is not None:
+            print ljust(p, 54), time.asctime(time.localtime(float(t)))
+
+if (len(sys.argv) != 2 or sys.argv[1][0] == '-'):
+    print "Usage: what-broke <pkg-name>"
+    sys.exit(-1)
+else:
+    what_broke(sys.argv[1])
+    sys.exit(0)

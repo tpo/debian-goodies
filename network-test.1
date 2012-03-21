@@ -1,0 +1,85 @@
+.\" network-test.1 - check the network and test if everything is OK
+.\" Copyright (C) 2006 Javier Fernandez-Sanguino
+.\" Everybody is allowed to distribute this manual page,
+.\" to modify it, and to distribute modifed versions of it.
+.TH network-test 1 "July 24 2006" "debian\-goodies" "debian\-goodies"
+.SH NAME
+network-test \- check the network and test if everything is fine
+.SH SYNOPSIS
+.B network-test
+.SH DESCRIPTION
+The
+.B network-test
+program will test your system's network configuration using basic
+tests and providing both information (\fBINFO\fP), warnings (\fBWARN\fP)
+and possible errors (\fBERR\fP) by checking:
+.RS
+* Interface status, number of transmitted packets and error rates.
+
+* Availability of configured routers, including the default router.
+
+* Proper host resolution, testing DNS resolution against a known host.
+
+* Proper network connectivity, testing reachability of remote hosts using
+ICMP and simulating a web connections to a remote web server (the web server
+used for the tests can be configured through the environment, see below)
+.RE
+
+.P 
+The script does not need special privileges to run as it does not
+do any system change. 
+
+.SH ENVIRONMENT
+
+The program will, by default, check 
+.B www.debian.org
+and its associated web server. If you want to use a different check host you
+can setup the environment as follows:
+.br
+.TP 
+.B CHECK_HOST
+The name of a host to use when testing DNS resolution.
+.TP 
+.B CHECK_IP_ADRESS
+The IP address of the host defined in 
+.B CHECK_HOST
+.TP 
+.B CHECK_WEB_HOST
+The web server to use for testing purposes when testing network connectivity.
+.TP 
+.B CHECK_WEB_PORT
+The web server port of server
+.B CHECK_WEB_HOST
+that will be used for testing.
+
+.SH EXIT STATUS
+
+The program will exit with error (1) if any of the network checks fail.
+
+.SH BUGS
+This program does not have \fIsuper cow powers\fP so it is unable to fix the
+errors by itself. It is also unable to detect if the network is failing due to
+a local firewall policy been in place so make sure you check your system logs
+with
+.B dmesg(1)
+
+.\".SH  SEE ALSO
+
+.SH AUTHOR
+
+.B network-test
+was written by Javier Fernandez-Sanguino for the Debian
+GNU/Linux distribution.
+
+.SH COPYRIGHT AND LICENCE
+
+Copyright (C) 2005,2006 Javier Fernandez-Sanguino <jfs@debian.org>.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2, or (at your option)
+any later version.
+
+On Debian systems, a copy of the GNU General Public License may be
+found in /usr/share/common-licenses/GPL.
+

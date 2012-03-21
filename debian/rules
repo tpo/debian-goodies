@@ -6,7 +6,7 @@
 #export DH_VERBOSE=1
 
 # This is the debhelper compatibility version to use.
-export DH_COMPAT=3
+export DH_COMPAT=4
 
 
 
@@ -15,7 +15,7 @@ build: build-stamp
 build-stamp:
 	dh_testdir
 
-	for prog in debget dglob dgrep dpigs; do pod2man $$prog.pod > $$prog.1; done
+	for prog in debget dglob dgrep dpigs; do pod2man -c "Debian-goodies documentation" $$prog.pod > $$prog.1; done
 
 	touch build-stamp
 
@@ -34,8 +34,12 @@ install: build
 
 	# Add here commands to install the package into debian/debian-goodies.
 	install -d $(CURDIR)/debian/debian-goodies/usr/bin
-	install -m 755 dgrep dglob debget dpigs debman checkrestart popbugs \
+	install -d $(CURDIR)/debian/debian-goodies/usr/sbin
+	install -m 755 dgrep dglob debget dpigs debman popbugs which-pkg-broke \
+		network-test \
 		$(CURDIR)/debian/debian-goodies/usr/bin
+	install -m 755 checkrestart \
+		$(CURDIR)/debian/debian-goodies/usr/sbin
 	for grepname in dzgrep degrep dfgrep; do \
 		ln -s dgrep $(CURDIR)/debian/debian-goodies/usr/bin/$$grepname; \
 	done
@@ -58,7 +62,8 @@ binary-indep: build install
 #	dh_installmime
 #	dh_installinit
 #	dh_installcron
-	dh_installman debget.1 debman.1 dglob.1 dgrep.1 dpigs.1 popbugs.1
+	dh_installman debget.1 debman.1 dglob.1 dgrep.1 dpigs.1 popbugs.1 \
+		which-pkg-broke.1 network-test.1
 #	dh_installinfo
 #	dh_undocumented
 	dh_installchangelogs 

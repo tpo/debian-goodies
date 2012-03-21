@@ -2,6 +2,10 @@
 
 set -e
 
+# set locale for sorting
+LC_NUMERIC=C
+export LC_NUMERIC
+
 Usage() {
     echo "Usage: dpigs [options]"
     echo

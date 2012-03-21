@@ -31,8 +31,16 @@ for o, a in opts:
     elif o in ("-o", "--output"):
         outputfile = a
 
-if len(args) > 1:
+if len(args) >= 1:
     popconfile = args[0]
+    if not os.path.exists(popconfile):
+	    sys.stderr.write('''
+I cannot file the popularity-contest data you pointed me to.
+This program requires the data collected from popularity-contest
+in order to work.
+
+''')
+            sys.exit(1)
 else:
     if not os.path.exists(popconfile):
         if not os.path.exists('/usr/sbin/popularity-contest'):

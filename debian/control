@@ -1,7 +1,7 @@
 Source: debian-goodies
 Section: utils
 Priority: optional
-Maintainer: Matt Zimmerman <mdz@debian.org>
+Maintainer: Javier Fernandez-Sanguino Pen~a <jfs@computer.org>
 Build-Depends-Indep: debhelper (>> 3.0.0)
 Standards-Version: 3.5.2
 

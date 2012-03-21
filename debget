@@ -1,10 +1,57 @@
 #!/bin/sh -e
 
+# Set the locale so we can control apt-get errors properly
+LC_ALL=C
+
+usage()
+{
+    echo "Usage: `basename $0` [--help] package"
+}
+   
+if [ $# -eq 0 ] ; then
+	usage
+	exit 1
+fi
+
+case $1 in
+    "-h")     usage; exit 0;;
+    "--help") usage; exit 0;;
+    -*) echo "Unknown option $1"; usage; exit 1;;
+esac
+
+# First check if apt-get is sane enough before proceeding
+apt-get -q2 --print-uris --reinstall install "dpkg" 2>/dev/null >/dev/null
+if [ $? -ne 0 ] ; then
+	echo "ERROR: There was an error calling apt-get. Check that the database is in a consistent state and try again"
+	exit 1
+fi
+
 for pkgspec in $*; do
-  version=$(apt-get -q2 -s --reinstall install "$pkgspec" | grep ^Inst | sed -ne '$s/^.*\[\(.*\)\].*$/\1/p')
-  echo "($pkgspec -> $version)"
-  aptdata=$(apt-get -q2 --print-uris --reinstall install "$pkgspec" | tail -1)
+   apt-get -q2 --print-uris --reinstall install "$pkgspec" 2>/dev/null >/dev/null
+   if [ $? -ne 0 ] ; then
+	echo "ERROR: There is no '$pkgspec' package. Sorry."
+	continue
+   fi
+  # This provides only one version, but it's better than the apt-get
+  # call which will not work in packages not available locally
+  apt-cache show "$pkgspec" 2>/dev/null | grep ^Ver |  
+  while read version; do
+  	  version=`echo $version | sed -ne '$s/^.*: \(.*\).*$/\1/p'`
+	  echo "($pkgspec -> $version)"
+  done
+  aptdata=$(apt-get -q2 --print-uris --reinstall install "$pkgspec" 2>/dev/null | tail -1)
+  if [ -z "$aptdata" ] ; then
+  	echo "ERROR: No APT data returned for '$pkgspec'. Sorry."
+	echo "This is probably because the package is in the local apt cache"
+	echo "Tip: Use 'aptitude download'"
+	continue
+  fi
   url=$(echo "$aptdata" | sed -e "s/^'\([^']*\)'.*$/\1/")
   file=$(echo "$aptdata" | sed -e "s/^'[^']*' \([^ ]*\).*$/\1/")
-  curl "$url" > "$file"
+  if [ -z "$url" ] ; then
+  	echo "ERROR: Cound not obtain an URL for $pkgspec"
+  else
+  	  echo "Downloading $pkgspec from $url"
+	  curl "$url" > "$file"
+  fi
 done

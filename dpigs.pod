@@ -36,7 +36,7 @@ F</var/lib/dpkg/status> currently).
 
 Matt Zimmerman <mdz@debian.org>
 
-This manpage was written by Frank Lichtenheld <frank@lichtenheld>.
+This manpage was written by Frank Lichtenheld <frank@lichtenheld.de>.
 
 =head1 COPYRIGHT AND LICENCE
 

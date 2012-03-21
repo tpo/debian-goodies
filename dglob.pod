@@ -10,11 +10,10 @@ B<dglob> [B<-0>] B<-f> I<pattern>
 
 =head1 DESCRIPTION
 
-B<dglob> searches for packages whose names match a pattern, and can
-either output their names, or a list of the files they contain. Per
-default, only installed packages are matched, unless you use the B<-a>
-option (see L<"OPTIONS">). The list of packages is written to stdout,
-one package per line.
+B<dglob> lists packages names matching a pattern. It can
+also list all the files they contain. By default B<dglobl> only searches
+installed packages; the B<-a> switch widens the search (see L<"OPTIONS">). The
+list is written to stdout, one name per line.
 
 grep-dctrl(1) is used to search the list of packages, so you should
 refer to its documentation for information on how patterns are
@@ -30,7 +29,7 @@ get the filenames separated by '\0' instead of a newline.
 
 =head1 OPTIONS
 
-B<dglob> suppports the following options:
+B<dglob> supports the following options:
 
 =over 4
 
@@ -41,7 +40,7 @@ Search through all available packages, not just installed ones.
 =item B<-f>
 
 List all files in the matched packages. This list only installed (i.e. 
-locallly existing) files from installed packages, so using it together
+locally existing) files from installed packages, so using it together
 with B<-a> is rather pointless.
 
 =item B<-0>
@@ -71,7 +70,7 @@ and installed packages.
 
 Matt Zimmerman <mdz@debian.org>
 
-This manpage was written by Frank Lichtenheld <frank@lichtenheld>.
+This manpage was written by Frank Lichtenheld <frank@lichtenheld.de>.
 
 =head1 COPYRIGHT AND LICENCE
 

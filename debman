@@ -1,4 +1,4 @@
-#! /bin/sh -e
+#! /bin/bash -e
 
 # debman - read a man page from an uninstalled Debian package file (.deb)
 

@@ -40,5 +40,11 @@ while true; do
     esac
 done
 
-eval $filter /var/lib/dpkg/status | grep-dctrl -PnsPackage $grep_dctrl_options "$1" \
-    | (eval $expand)
+# Does the package exist?
+packages=`eval $filter /var/lib/dpkg/status | grep-dctrl -PnsPackage $grep_dctrl_options "$1"`
+if [ -z "$packages" ] ; then
+	exit 1
+fi
+
+eval $filter /var/lib/dpkg/status | grep-dctrl -PnsPackage $grep_dctrl_options "$1" |
+(eval $expand)

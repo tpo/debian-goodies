@@ -13,11 +13,17 @@ It uses apt-get(1) to find out the URL so it will download the same version
 from the same server as I<apt-get> would do. The .deb will be downloaded with
 curl(1) and stored in your current working directory.
 
+=head1 KNOWN BUGS
+
+B<debget> will not work for packages that are available in I<apt-get>'s cache.
+If you need that functionality please use the .I<download> option in
+I<aptitude>.
+
 =head1 AUTHOR
 
 Matt Zimmerman <mdz@debian.org>
 
-This manpage was written by Frank Lichtenheld <frank@lichtenheld>.
+This manpage was written by Frank Lichtenheld <frank@lichtenheld.de>.
 
 =head1 COPYRIGHT AND LICENCE
 
