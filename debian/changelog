@@ -1,3 +1,10 @@
+debian-goodies (0.58) unstable; urgency=low
+
+  * [dglob] 
+    - Remove any empty lines from grep-dctrl's output (Closes: 646189)
+
+ -- Javier Fernandez-Sanguino Pen~a <jfs@debian.org>  Sun, 23 Oct 2011 13:54:27 +0200
+
 debian-goodies (0.57) unstable; urgency=low
 
   * [checkrestart]: 
@@ -13,7 +20,7 @@ debian-goodies (0.56) unstable; urgency=low
   * [checkrestart]: 
      - Use patch provided by Jörg Sommer and Piotr Kaczuba that makes the
        script use a set for the initscripts information, thus making the
-       program work with Python 2.7 (Closes: #64397)
+       program work with Python 2.7 (Closes: #643977)
      - Fix behaviour of -p so that it does not consider files that do
        not belong to any package, thanks to Peter Eisentraut for the
        patch. (Closes: #608387)

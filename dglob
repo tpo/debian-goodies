@@ -58,11 +58,11 @@ if [ "$all" = "no" ] ; then
     if [ -z "$packages" ] ; then
     	exit 1
     fi
-    eval $filter /var/lib/dpkg/status | grep-dctrl -PnsPackage $grep_dctrl_options "$1" |
+    eval $filter /var/lib/dpkg/status | grep-dctrl -PnsPackage $grep_dctrl_options "$1" | grep -v ^$ |
     (eval $expand)
 else
     # Use grep-available as the status file does not include all available
     # packages
-    grep-aptavail -PnsPackage $grep_dctrl_options "$1" |
+    grep-aptavail -PnsPackage $grep_dctrl_options "$1" | grep -v ^$ |
     (eval $expand)
 fi
