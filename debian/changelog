@@ -1,3 +1,24 @@
+debian-goodies (0.51) unstable; urgency=low
+
+  * Include patch from Jiri Palecek that makes checkrestart work
+  with processes that lack a proper link /proc/$PID/exe. This seems to happen
+  with UML processes and confused the program. (Closes: 522850)
+  * Include patches provided by Joerg Sommer for checkrestart:
+  (Closes: 511537) 
+     -  Set locale to POSIX ('C') since the output of dpkg is localized and
+        localisations makes the match for diversions fail.
+     - Skip the last output line from diversions since it is a summary
+       listing packages that are part of a diversion.
+     - Use dpkg-query instead of dpkg since dpkg-query is the generic interface
+       for querying the dpkg database is dpkg-query, and dpkg is only a 
+       wrapper for it.
+     - Removed useless check in the isdeletedFile function that covers
+       mutt in /tmp since there is already a match for /tmp
+  * checkrestart: don't complain about processes that have deleted files
+    in /var/tmp
+
+ -- Javier Fernandez-Sanguino Pen~a <jfs@debian.org>  Sat, 02 May 2009 17:53:57 +0200
+
 debian-goodies (0.50) unstable; urgency=low
 
   * Use patch provided by Thadeu Lima de Souza Cascardo to:

@@ -127,11 +127,14 @@ def main():
             print "Process %s (PID: %d) "  % (process.program, process.pid)
             process.listDeleted()
 
+    lc_all_c_env = os.environ
+    lc_all_c_env['LC_ALL'] = 'C'
 
     packages = {}
     diverted = None
-    dpkgQuery = ["dpkg", "--search"] + programs.keys()
-    dpkgProc = subprocess.Popen(dpkgQuery, stdout=subprocess.PIPE, stderr=None)
+    dpkgQuery = ["dpkg-query", "--search"] + programs.keys()
+    dpkgProc = subprocess.Popen(dpkgQuery, stdout=subprocess.PIPE, stderr=None,
+                                env = lc_all_c_env)
     for line in dpkgProc.stdout.readlines():
         if line.startswith('local diversion'):
             continue
@@ -146,6 +149,11 @@ def main():
             packagename, program = m.group(1), diverted
         else:
             packagename, program = line[:-1].split(': ')
+            if program == diverted:
+                # dpkg prints a summary line after the diversion, name both
+                # packages of the diversion, so ignore this line
+                # mutt-patched, mutt: /usr/bin/mutt
+                continue
 
         packages.setdefault(packagename,Package(packagename))
         packages[packagename].processes.extend(programs[program])
@@ -160,7 +168,7 @@ def main():
     for package in packages.values():
         if package == 'util-linux':
             continue
-        dpkgQuery = ["dpkg", "--listfiles", package.name]
+        dpkgQuery = ["dpkg-query", "--listfiles", package.name]
         dpkgProc = subprocess.Popen(dpkgQuery, stdout=subprocess.PIPE, stderr=None)
         for line in dpkgProc.stdout.readlines():
             path = line[:-1]
@@ -260,6 +268,9 @@ def isdeletedFile (f):
     # Or about files under /tmp
     if f.startswith('/tmp/'):
         return 0
+    # Or about files under /var/tmp
+    if f.startswith('/var/tmp/'):
+        return 0
     # Or /dev/zero
     if f.startswith('/dev/zero'):
         return 0
@@ -272,15 +283,12 @@ def isdeletedFile (f):
     # Skip automatically generated files
     if f.endswith('icon-theme.cache'):
         return 0
-    # Skip mutt files
-    if re.compile("/tmp/mutt-\w+-[\-0-9]").search(f):
-        return 0
     # Skip font files
     if f.startswith('/var/cache/fontconfig/'):
         return 0
     # Skip, if asked to, files that do not belong to any package
     if onlyPackageFiles:
-        dpkgQuery = ["dpkg", "--search", f]
+        dpkgQuery = ["dpkg-query", "--search", f]
         dpkgProc = subprocess.Popen(dpkgQuery, stdout=subprocess.PIPE, stderr=None)
         for line in dpkgProc.stdout.readlines():
             if line.endswith(f):
@@ -380,12 +388,14 @@ class Process:
         self.files = []
         self.descriptors = []
         self.links = []
+        self.program = ''
 
         try:
-            self.program = self.cleanFile(os.readlink('/proc/%d/exe' % self.pid))
+            self.program = os.readlink('/proc/%d/exe' % self.pid)
         except OSError, e:
             if e.errno != 2:
                 raise
+        self.program = self.cleanFile(self.program)
 
     def cleanFile(self, f):
         # /proc/pid/exe has all kinds of junk in it sometimes
