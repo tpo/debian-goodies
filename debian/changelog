@@ -1,6 +1,7 @@
 debian-goodies (0.60) unstable; urgency=low
 
   * Change Vcs-* headers to new git repository (Closes: #623379)
+  * Bump Standards-Version to 3.9.3 (no changes)
 
  --
 
