@@ -1,40 +1,50 @@
-.TH "DEBMANY" "1" "1.2" "Michael Arlt" "Dienstprogramme für Benutzer"
+.TH "DEBMANY" "1" "1.3" "Michael Arlt" "Dienstprogramme für Benutzer"
 .SH "NAME"
-debmany \- Wählen von manpages aus installierten Paketen, Paketen des Repositories oder .deb\-Dateien zum Betrachten mit "man" oder einem alternativen Viewer.
+debmany \- Wählen von Manpages oder Dokumentationen aus installierten Paketen, Paketen des Repositories oder .deb\-Dateien zum Betrachten mit "man" bzw. "less" oder einem alternativen Viewer.
 .SH "SYNTAX"
 .B debmany
 \fI\-\-help
 .br 
 .B debmany
-\fI[\-m manpageviewer|\-k|\-g|\-x] [\-L Limit] [\-l Sprache1[,...]] Paket|Paket.deb\fR
+\fI[\-v[v]] [\-k|\-g|\-x] [\-m manpageviewer] [\-o otherviewer] [\-L Limit] [\-l Sprache1[,...]] Paket|Paket.deb\fR
+.br 
+.B debmany
+\fI[\-v[v]] [\-k|\-g|\-x] [\-m manpageviewer] [\-o otherviewer] [\-L Limit] [\-l Sprache1[,...]] \-z [Paket|Paket.deb]\fR
 .SH "BESCHREIBUNG"
 .\" Add any additional description here
 .PP 
-Wählen Sie eine Manpage von einem Debian Paket um sie mit "man" oder einem alternativen Viewer zu betrachten. Die Liste der Manpages wird in einem Dialog dargestellt. Unterstützte Quellen für Debian Pakete sind: Lokale .deb\-Datei, ein Paket aus dem Repository oder ein installiertes Paket.
+Wählen Sie eine Manpage oder Dateien aus usr/share/doc von einem Debian Paket um sie mit "man" oder "less" bzw. einem alternativen Viewer zu betrachten. Die Liste der Dateien wird in einem Dialog dargestellt. Unterstützte Quellen für Debian Pakete sind: Lokale .deb\-Datei, ein Paket aus dem Repository oder ein installiertes Paket.
 .TP 
 \fB\-\-help\fR
 zeigt eine kurze Hilfe und beendet sich
 .TP 
-\fB\-m manpageviewer\fR
-Setzt optional den Manpageviewer. Der Viewer muss .gz Dateien unterstützen. Es ist zu beachten, dass der komplette Aufruf formuliert werden muss. "%s" wird durch den Pfad zur Manpage ersetzt. Wenn "%s" fehlt wird " %s" an den Manpageviewer angehängt. Der Aufruf muss in "" oder '' gefasst werden \- siehe Beispiele.
-Bei der Benutzung eines grafischen Manpageviewers müssen Sie sicherstellen, dass Sie Zugriff auf den Desktop haben (ggf.: sux oder ssh mit x\-forwarding)
-.TP 
 \fB\-k\fR
-Zeigt die Manpage im bevorzugten Viewer (muss .gz Dateien unterstützen) an, falls Sie KDE benutzen \- Kurzform von \-m 'kfmclient exec man:%s'. "kfmclient" ist Teil des Paketes "konqueror".
+Zeigt die Manpage im bevorzugten Viewer (muss .gz Dateien unterstützen) an, falls Sie KDE benutzen \- Kurzform von \-m 'kfmclient exec man:%s' bzw. 'kfmclient exec %s' für andere Dateien. "kfmclient" ist Teil des Paketes "konqueror" (zumindest in Debian Etch).
 .TP 
 \fB\-g\fR
-Zeigt die Manpage im bevorzugten Viewer (muss .gz Dateien unterstützen) an, falls Sie GNOME benutzen \- Kurzform von \-m 'gnome\-open man:%s'. "gnome\-open" ist Teil des Paketes "libgnome2\-0".
+Zeigt die Manpage im bevorzugten Viewer (muss .gz Dateien unterstützen) an, falls Sie GNOME benutzen \- Kurzform von \-m 'gnome\-open man:%s'. "gnome\-open" ist Teil des Paketes "libgnome2\-0" (zumindest in Debian Etch).
 .TP 
 \fB\-x\fR
-Zeigt die Manpage im bevorzugten Viewer (muss .gz Dateien unterstützen) an, falls Sie KDE/GNOME/Xfce benutzen \- Kurzform von \-m 'xdg\-open man:%s'. "xdg\-open" ist Teil des Paketes "xdg\-utils".
+Zeigt die Manpage im bevorzugten Viewer (muss .gz Dateien unterstützen) an, falls Sie KDE/GNOME/Xfce benutzen \- Kurzform von \-m 'xdg\-open man:%s'. "xdg\-open" ist Teil des Paketes "xdg\-utils" (zumindest in Debian Etch).
+.TP 
+\fB\-m manpageviewer\fR
+Überschreibt den Manpageviewer. Der Viewer muss .gz Dateien unterstützen. Es ist zu beachten, dass der komplette Aufruf formuliert werden muss. "%s" wird durch den Pfad zur Manpage ersetzt. Wenn "%s" fehlt wird " %s" an den Manpageviewer angehängt. Der Aufruf muss in "" oder '' gefasst werden \- siehe Beispiele.
+Bei der Benutzung eines grafischen Manpageviewers müssen Sie sicherstellen, dass Sie Zugriff auf den Desktop haben (ggf.: sux oder ssh mit x\-forwarding)
+.TP 
+\fB\-o otherviewer\fR
+Überschreibt den Viewer für sonstige Dateien (/usr/share/doc).
 .TP 
 \fB\-L Limit\fR
-Überschreitet ein File, das per Download heruntergeladen werden muss, das Limit so werden Sie gefragt, ob der Download stattfinden soll. Ohne Angabe einer Einheit ist die Angabe in Bytes. Durch Anhängen der Buchstaben K, M, G der T kann die Einheit geändert werden.
+Überschreitet ein File, das per Download heruntergeladen werden muss, das Limit so werden Sie gefragt, ob der Download stattfinden soll. Ohne Angabe einer Einheit ist die Angabe in Bytes. Durch Anhängen der Buchstaben K, M, G oder T kann die Einheit geändert werden.
 .TP 
 \fB\-l Sprache1[,...]\fR
-Englische Manpages werden immer angezeigt. Wenn Sie mehr Sprachen sehen wollen, so können Sie dies hier festlegen. Im Prinzip geben Sie hier eine mit Komma getrennte Liste der Ordner aus den Manpage Ordnern (/usr/share/man,/usr/X11R6/man) an \- z. B. de,fr oder "*" wenn Sie alle Sprachen sehen wollen. Ordner mit ".xyz" am Ende (z. B. fr.ISO8859\-1) werden automatisch durch Ihre Auswahl (fr in diesem Beispiel) selektiert.
+Englische Manpages werden immer angezeigt. Wenn Sie mehr Sprachen sehen wollen, so können Sie dies hier festlegen. Im Prinzip geben Sie hier eine mit Komma getrennte Liste der Ordner aus den Manpage Ordnern (/usr/share/man) an \- z. B. de,fr oder "zh*" wenn Sie alle chinesischen Manpages (sowohl das einfache "zh_CN" als auch das traditionelle Chinesisch "zh_TW") sehen wollen. Sicherheitshalber kann man auch immer "*" am Ende der Sprache anhängen.
+Bei der Installation ggf. dynamisch generierte zeichensatzbasierte Abwandlungen stehen nicht zur Auswahl.
+.TP 
+\fB\-z\fR
+Zur Auswahl der Dateien und ggf. zur Eingabe des Paketes wird "zenity" (grafischer Dialog) verwendet. Hierzu muss man berechtigt sein, X\-Programme zu starten. Diese Option in Kombination mit den Parametern \-k, \-g, \-x bzw. \-m und \-o ermöglicht es, debmany ohne Console zu verwenden.
 .PP 
-Die Manpages werden temporär nach /dev/shm (sofern dieses Verzeichnis existiert) oder /tmp extrahiert. Durch das Setzen und Exportieren der Umgebungsvariable TMPDIR kann der Speicherort überschrieben werden.
+Die Manpages werden temporär nach /dev/shm (sofern dieses Verzeichnis existiert), /tmp oder /var/tmp extrahiert. Durch das Setzen und Exportieren der Umgebungsvariable TMPDIR bzw. das Setzen als temporären Variable kann der Speicherort überschrieben werden.
 .PP 
 Das Debian Paket "whiptail" (bevorzugt) oder "dialog" sowie "curl" muss installiert sein.
 .SH "BEISPIELE"
@@ -57,11 +67,27 @@ Benutzt den bevorzugten Manviewer (für GNOME Anwender)
 debmany \-x sc
 Benutzt den bevorzugten Manviewer (für KDE/GNOME/Xfce Anwender)
 .TP 
-debmany \-m 'konqueror man:%s' sc
-Benutzt Konqueror als Viewer
+debmany \-z \-k
+Benutzt "zenity" um Dateien auszuwählen und Paketnamen einzugeben.
 .TP 
-alias debmany='debmany \-l de \-L 5M \-k'; debmany \-m man \-l "*" foo
+TMPDIR=~/tmp debmany \-m 'konqueror man:%s' sc
+Benutzt ~/tmp als temporären Ordner und Konqueror als Viewer
+.TP 
+alias debmany='debmany \-l de \-L 5M \-k'; debmany \-m man \-l "zh*" foo
 Setzte einen Alias um die bevorzugten Optionen festzulegen. Diese können, wie man sieht, jederzeit überschrieben werden.
+.TP 
+vi /usr/local/bin/ask # nach dem Speichern: chmod 755 ask
+#!/bin/dash
+.br 
+read \-p "Programm zum Öffnen: " pgm
+.br 
+eval $pgm "$1"
+.br 
+
+.br 
+debmany \-o ask
+.br 
+Beim Öffnen einer Datei aus usr/share/doc wird man nach dem Programm, mit dem man sie öffnen möchte, gefragt.
 .SH "AUTOR"
 Geschrieben von Michael Arlt.
 .SH "LIZENZ"

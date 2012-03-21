@@ -1,12 +1,12 @@
 #!/usr/bin/python
 
 # Copyright (C) 2001 Matt Zimmerman <mdz@debian.org>
-# 
-# Further updated by Javier Fernandez-Sanguino <jfs@debian.org>
+# Copyright (C) 2007,2008 Javier Fernandez-Sanguino <jfs@debian.org>
 # - included patch from Justin Pryzby <justinpryzby_AT_users.sourceforge.net>
 #   to work with the latest Lsof - modify to reduce false positives by not
 #   complaining about deleted inodes/files under /tmp/, /var/log/,
 #   /var/run or named   /SYSV. 
+# - introduced a verbose option
 
 # PENDING:
 # - included code from 'psdel' contributed by Sam Morris <sam_AT_robots.org.uk> to
@@ -41,6 +41,7 @@ import pwd
 import sys
 import string
 import subprocess
+import getopt
 from stat import *
 
 if os.getuid() != 0:
@@ -58,11 +59,32 @@ def find_cmd(cmd):
                  return location
      return 0
 
+def usage():
+    sys.stderr.write('usage: checkrestart [-v]\n')
 
 def main():
     process = None
     toRestart = {}
 
+# Process options
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], "hv", ["help", "verbose"])
+    except getopt.GetoptError, err:
+        # print help information and exit:
+        print str(err) # will print something like "option -a not recognized"
+        usage()
+        sys.exit(2)
+    verbose = False
+    for o, a in opts:
+        if o == "-v":
+            verbose = True
+        elif o in ("-h", "--help"):
+            usage()
+            sys.exit()
+        else:
+            assert False, "unhandled option"
+
+# Start checking
     toRestart = lsofcheck()
     # Check if we have lsof, if not, use psdel
 #    if find_cmd('lsof'):
@@ -86,10 +108,17 @@ def main():
     else:
         print "(%d distinct programs)" % len(programs)
 
+# Verbose information
+    if verbose:
+        for process in toRestart:
+            print "Process %s (PID: %d) "  % (process.program, process.pid)
+            process.listDeleted()
+
+
     packages = {}
     diverted = None
     dpkgQuery = ["dpkg", "--search"] + programs.keys()
-    dpkgProc = subprocess.Popen(dpkgQuery, stdout=subprocess.PIPE)
+    dpkgProc = subprocess.Popen(dpkgQuery, stdout=subprocess.PIPE, stderr=None)
     for line in dpkgProc.stdout.readlines():
         if line.startswith('local diversion'):
             continue
@@ -118,9 +147,9 @@ def main():
     for package in packages.values():
         if package == 'util-linux':
             continue
-        #dpkgQuery = 'dpkg-query --listfiles ' + package.name
-        dpkgQuery = 'dpkg --listfiles ' + package.name
-        for line in os.popen(dpkgQuery).readlines():
+        dpkgQuery = ["dpkg", "--listfiles ", + package.name]
+        dpkgProc = subprocess.Popen(dpkgQuery, stdout=subprocess.PIPE, stderr=None)
+        for line in dpkgProc.stdout.readlines():
             path = line[:-1]
             if path.startswith('/etc/init.d/'):
                 if path.endswith('.sh'):
@@ -181,23 +210,61 @@ def lsofcheck():
         elif field == 'k':
             process.links.append(data)
         elif field == 'n':
-            # Remove the previous entry to check if this is something we should do
+            # Remove the previous entry to check if this is something we should use
             if data.startswith('/SYSV'):
+                # If we find SYSV we discard the previous descriptor
                 last = process.descriptors.pop()
-                if not re.compile("DEL").search(last):
-                    process.files.append(data)
-            elif data.startswith('/dev/zero') or data.startswith('/dev/pts/'):
+            elif data.startswith('/'):
                 last = process.descriptors.pop()
-                if not re.compile("DEL").search(last):
+                # Add it to the list of deleted files if the previous descriptor
+                # was DEL or lsof marks it as deleted
+                if re.compile("DEL").search(last) or re.compile("deleted").search(data):
                     process.files.append(data)
             else:
-                process.files.append(data)
+                # We discard the previous descriptors and drop it
+                last = process.descriptors.pop()
         elif field == 'f':
+            # Save the descriptor for later comparison
             process.descriptors.append(data)
 
     toRestart = filter(lambda process: process.needsRestart(),
                        processes.values())
     return toRestart
+
+# Tells if a file has to be considered a deleted file
+# Returns:
+#  - 0 (NO) for known locations of files which might be delted
+#  - 1 (YES) for valid deleted files we are interested in
+def isdeletedFile (f):
+    # We don't care about log files
+    if f.startswith('/var/log/'):
+        return 0
+    # Or about files under temporary locations
+    if f.startswith('/var/run/'):
+        return 0
+    # Or about files under /tmp
+    if f.startswith('/tmp/'):
+        return 0
+    # Or /dev/zero
+    if f.startswith('/dev/zero'):
+        return 0
+    # Or /dev/pts (used by gpm)
+    if f.startswith('/dev/pts/'):
+        return 0
+    # Or /usr/lib/locale
+    if f.startswith('/usr/lib/locale/'):
+        return 0
+    # Skip automatically generated files
+    if f.endswith('icon-theme.cache'):
+        return 0
+    # TODO: it should only care about library files (i.e. /lib, /usr/lib and the like)
+    # build that check with a regexp to exclude others
+    if f.endswith(' (deleted)'):
+        return 1
+    if re.compile("\(path inode=[0-9]+\)$").search(f):
+        return 1
+    # Default: it is a deleted file we are interested in
+    return 1
 
 def psdelcheck():
 # TODO - Needs to be fixed to work here
@@ -214,7 +281,7 @@ def delmaps (pid):
     processes = {}
     process = processes.setdefault(pid,Process(int(pid)))
     deleted = re.compile(r'(.*) \(deleted\)$')
-    boring = re.compile(r'/(dev/zero|SYSV([\da-f]{8}))')
+    boring = re.compile(r'/(dev/zero|SYSV([\da-f]{8}))|/usr/lib/locale')
 
     mapline = re.compile(r'^[\da-f]{8}-[\da-f]{8} [r-][w-][x-][sp-] '
             r'[\da-f]{8} [\da-f]{2}:[\da-f]{2} (\d+) *(.+)( \(deleted\))?\n$')
@@ -299,58 +366,36 @@ class Process:
         # Support symlinked /usr
         if f.startswith('/usr'):
             statinfo = os.lstat('/usr')[ST_MODE]
+            # If /usr is a symlink then find where it points to
             if S_ISLNK(statinfo): 
                 newusr = os.readlink('/usr')
                 if not newusr.startswith('/'):
-                    newusr = os.path.join(os.path.dirname('/tmp/test'), newusr)
+                    # If the symlink is relative, make it absolute
+                    newusr = os.path.join(os.path.dirname('/usr'), newusr)
                 f = re.sub('^/usr',newusr, f)
-                print "Changing usr to " + newusr + " result:" +f;
+                # print "Changing usr to " + newusr + " result:" +f; # Debugging
         return re.sub('( \(deleted\)|.dpkg-new).*$','',f)
+
+    def listDeleted(self):
+        listfiles = []
+        listdescriptors = []
+        for f in self.files:
+            if isdeletedFile(f):
+                listfiles.append(f)
+        if  listfiles != []:
+            print "List of deleted files in use:"
+            for file in listfiles:
+                print "\t" + file
 
     # Check if a process needs to be restarted, previously we would
     # just check if it used libraries named '.dpkg-new' since that's
     # what dpkg would do. Now we need to be more contrieved.
+    # Returns:
+    #  - 0 if there is no need to restart the process
+    #  - 1 if the process needs to be restarted
     def needsRestart(self):
         for f in self.files:
-            # We don't care about log files
-            if f.startswith('/var/log/'):
-	    	continue
-            # Or about files under temporary locations
-            if f.startswith('/var/run/'):
-	    	continue
-            # Or about files under /tmp
-            if f.startswith('/tmp/'):
-	    	continue
-            # Or /dev/zero
-            if f.startswith('/dev/zero'):
-	    	continue
-            # Or /dev/pts (used by gpm)
-            if f.startswith('/dev/pts/'):
-	    	continue
-            # TODO: it should only care about library files (i.e. /lib, /usr/lib and the like)
-            # build that check with a regexp to exclude others
-            if f.endswith(' (deleted)'):
-	    	return 1
-	    if re.compile("\(path inode=[0-9]+\)$").search(f):
-	    	return 1
-	for f in self.descriptors:
-            # Notice that if it begins with SYSV or /dev/zero
-            # it is not a deleted file and the descriptor was popped already
-            # (see above)
-            # We don't care about log files
-            if f.startswith('/var/log/'):
-	    	continue
-            # Or about files under temporary locations
-            if f.startswith('/var/run/'):
-	    	continue
-            # Or about files under /tmp
-            if f.startswith('/tmp/'):
-	    	continue
-            # Or /dev/zero
-            if f.startswith('/dev/zero'):
-	    	continue
-            # We care about any other DEL files
-            if re.compile("DEL").search(f):
+            if isdeletedFile(f):
 	    	return 1
 	for f in self.links:
 	    if f == 0:

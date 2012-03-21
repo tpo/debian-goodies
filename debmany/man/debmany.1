@@ -1,40 +1,50 @@
-.TH "DEBMANY" "1" "1.2" "Michael Arlt" "User Commands"
+.TH "DEBMANY" "1" "1.3" "Michael Arlt" "User Commands"
 .SH "NAME"
-debmany \- select manpages from installed packages, packages from the repository or .deb\-files for viewing using "man" or an alternative viewer.
+debmany \- select manpages or documentation files from installed packages, packages from the repository or .deb\-files for viewing using "man" resp. "less" or an alternative viewer.
 .SH "SYNOPSIS"
 .B debmany
 \fI\-\-help
 .br 
 .B debmany
-\fI[\-m manpageviewer|\-k|\-g|\-x] [\-L limit] [\-l lang1[,...]] [package|package.deb\fR
+\fI[\-v[v]] [\-k|\-g|\-x] [\-m manpageviewer] [\-o otherviewer] [\-L limit] [\-l lang1[,...]] package|package.deb\fR
+.br 
+.B debmany
+\fI[\-v[v]] [\-k|\-g|\-x] [\-m manpageviewer] [\-o otherviewer] [\-L limit] [\-l lang1[,...]] \-z [package|package.deb]\fR
 .SH "DESCRIPTION"
 .\" Add any additional description here
 .PP 
-Select a manpage from a debian package for viewing with man or an alternative viewer. The list of manpages is displayed in a dialog. Supported locations for debian packages are: Local .deb\-file, a package in the repository or a installed package.
+Select a manpage or files at /usr/share/doc from a debian package for viewing with "man", "less" or an alternative viewer. The list of files is displayed in a dialog. Supported locations for debian packages are: Local .deb\-file, a package in the repository or a installed package.
 .TP 
 \fB\-\-help\fR
 display a small help and exit
+.TP 
+\fB\-k\fR
+Display the manpage using your preferred viewer (must support .gz files) if you use KDE \- this is the short form of \-m 'kfmclient exec man:%s'. "kfmclient" is a part of the package "konqueror" (at least in Debian Etch).
+.TP 
+\fB\-g\fR
+Display the manpage using your preferred viewer (must support .gz files) if you use GNOME \- this is the short form of \-m 'gnome\-open man:%s'. "gnome\-open" is a part of the package "libgnome2\-0" (at least in Debian Etch).
+.TP 
+\fB\-x\fR
+Display the manpage using your preferred viewer (must support .gz files) if you use KDE/GNOME/Xfce \- this is the short form of \-m 'xdg\-open man:%s'. "xdg\-open" is a part of the package "xdg\-utils" (at least in Debian Etch).
 .TP 
 \fB\-m manpageviewer\fR
 Optionally set a manpage viewer. The viewer must support .gz files. You must define the complete request. "%s" gets replaced with the path to the manpage. If "%s" is missing " %s" is appended to the manpageviewer. The manpageviewer must be enclosed with "" or '' \- see examples.
 If you use a graphical viewer you must ensure that you have access to your desktop (if necessary: sux or ssh with x\-forwarding)
 .TP 
-\fB\-k\fR
-Display the manpage using your preferred viewer (must support .gz files) if you use KDE \- this is the short form of \-m 'kfmclient exec man:%s'. "kfmclient" is a part of the package "konqueror".
-.TP 
-\fB\-g\fR
-Display the manpage using your preferred viewer (must support .gz files) if you use GNOME \- this is the short form of \-m 'gnome\-open man:%s'. "gnome\-open" is a part of the package "libgnome2\-0".
-.TP 
-\fB\-x\fR
-Display the manpage using your preferred viewer (must support .gz files) if you use KDE/GNOME/Xfce \- this is the short form of \-m 'xdg\-open man:%s'. "xdg\-open" is a part of the package "xdg\-utils".
+\fB\-o otherviewer\fR
+Optionally set a viewer for other files (/use/share/doc).
 .TP 
 \fB\-L limit\fR
 If a file which must be downloaded exceeds the limit, you are asked if the download should start. Without unit the value is in bytes. You can append K, M, G or T to the value to change the unit.
 .TP 
 \fB\-l lang1[,...]\fR
-English manpages are displayed always. If you want more languages you can specify them here. Provide a comma separated list of the folder names in the manpgage folders (/usr/share/man,/usr/X11R6/man) \- e.g. de,fr or "*" if you want to see all languages. Folders with ".xyz" at the end (e.g. fr.ISO8859\-1) are automatically selected together with your choice (fr in this example).
+English manpages are displayed always. If you want more languages you can specify them here. Provide a comma separated list of the folder names in the manpgage folders (/usr/share/man) \- e.g. de,fr or "zh*" if you want to see all Chinese manpages (Simplified and Traditional Chinese as well). It is safe always to use "*" at the end of your language.
+During installation automatic generated character set based versions are not available for selection.
+.TP 
+\fB\-z\fR
+Zenity (a graphical dialog) is used to select the files and if necessary to enter the package name. You must have the rights to start X\-programs. This option combined with the parameters \-k, \-g, \-x respectively \-m and \-o make it possible to use debmany without console.
 .PP 
-The manpages are temporarily extracted to /dev/shm (if the directory exists) or /tmp . You can override the path if you set and export the environment variable TMPDIR.
+The manpages are temporarily extracted to /dev/shm (if the directory exists) or /tmp . You can override the path if you set and export the environment variable TMPDIR or set it as a temporary variable.
 .PP 
 You need to have the debian package "whiptail" (preferred) or "dialog" as well as "curl" installed.
 .SH "EXAMPLES"
@@ -49,19 +59,35 @@ debmany test.deb
 Show all manpages from the local debian package "./test.deb" using man.
 .TP 
 debmany \-k sc
-Use your preferred man\-viewer (for KDE user)
+Use your preferred man\-viewer (for KDE user).
 .TP 
 debmany \-g sc
-Use your preferred man\-viewer (for GNOME user)
+Use your preferred man\-viewer (for GNOME user).
 .TP 
 debmany \-x sc
-Use your preferred man\-viewer (for KDE/GNOME/Xfce user)
+Use your preferred man\-viewer (for KDE/GNOME/Xfce user).
 .TP 
-debmany \-m 'konqueror man:%s' sc
-Use Konqueror as viewer
+debmany \-z \-k
+Uses "zenity" to select files and to enter the package name.
 .TP 
-alias debmany='debmany \-l de \-L 5M \-k'; debmany \-m man \-l "*" foo
+TMPDIR=~/tmp debmany \-m 'konqueror man:%s' sc
+Use ~/tmp as temporary folder and Konqueror as viewer.
+.TP 
+alias debmany='debmany \-l de \-L 5M \-k'; debmany \-m man \-l "zh*" foo
 Set an alias with your preferred options and overwrite them if needed.
+.TP 
+vi /usr/local/bin/ask # after saving: chmod 755 ask
+#!/bin/dash
+.br 
+read \-p "program to use: " pgm
+.br 
+eval $pgm "$1"
+.br 
+
+.br 
+debmany \-o ask
+.br 
+Every time you select other files from a package you will be asked which program to use.
 .SH "AUTHOR"
 Written by Michael Arlt.
 .SH "LICENSE"

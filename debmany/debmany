@@ -1,17 +1,31 @@
 #!/bin/bash
 # script:      debmany
 # author:      Michael Arlt
-# description: select the manpages of any [not] installed debian package
+# description: select manpages+docs of any [not] installed debian package
 # comment:     debmany is based on the work of debman and debget
-# uses:        whiptail (preferred) or dialog as well as curl
+# gui uses:    whiptail (preferred), dialog or zenity as well
+# other uses:  curl, less (can be overwritten: -o)
+# optional:    -k -g -x: kfmexec gnome-open xdg-open (xdg-utils)
 # This is free software.  You may redistribute copies of it under the terms of
 # the GNU General Public License <http://www.gnu.org/licenses/gpl.html>.
 # There is NO WARRANTY, to the extent permitted by law.
 
+# Tests for new releases:
+# -L test downloadlimit and correct display of different sizes and units (http)
+# -l several languages with and without "*" on installed and not installed packages
+# -m -o test default and using parameters
+# -z -k -g -x test
+# open manpage,other file (usr/share/doc/...),manpage,other file
+# check delivered debmany manpages
+# check and test bash_completion
+# check includes of installed (bash: bash-builtins) and uninstalled (ax25-tools:netrom-tools)
+# test additionally the next operationg system (e.g. lenny)
+
 LC_ALL=C
 
-# choose the manpageviewer
-mancmdline="man %s" # default manpageviewer
+# defaults
+mancmdline="man %s"     # manpageviewer
+othercmdline="less %s"  # viewer for other files
 
 curdir=`pwd`
 
@@ -19,31 +33,52 @@ error()
 {
   # show errorcode and quit
   echo "ERROR: $*" >&2
+  if [ "$cmd" = "zenity" ]
+  then
+    $cmd --error --text="$*"
+  fi
   exit 1
+}
+
+debug()
+{
+  # show debugging
+  test $debug && echo "$*" >&2
 }
 
 usage()
 {
-  echo "debmany 1.2 Mon Aug 27 19:06:55 CEST 2007
-Description: Display a manpage from a Debian package.
-             The list of manpages is displayed in a dialog.
+  echo "debmany $version Thu May 15 16:56:19 CEST 2008
+Description: Display a manpage or documentation files from a Debian package.
+             The list of files is displayed in a dialog.
              Supported locations for debian packages are: Local .deb-file,
              a package in the repository or an installed package.
+             The default for manpages is man - less is used for other files.
+             Default can be overwritten with -k|-g|-x and -m -o.
 Syntax1 : debmany [-?|-h|--help]
-Syntax2 : debmany [-m viewer|-k|-g|-x] [-L limit] [-l lang1[,...]] package[.deb]
+Syntax2 : debmany [-v[v]] [-k|-g|-x] [-m manviewer] [-o otherviewer] [-L limit] [-l lang1[,...]] package[.deb]
+Syntax3 : debmany [-v[v]] [-k|-g|-x] [-m manviewer] [-o otherviewer] [-L limit] [-l lang1[,...]] -z [package[.deb]]
 Examples: debmany foo.deb  show manpages from a local package file foo.deb
           debmany foo      show manpages from a package, if the package is
                            not installed it is retrieved from the
                            configured repositories.
-          debmany -k foo   show manpages using your preferred man-viewer (KDE)
-          debmany -g foo   show manpages using your preferred man-viewer (GNOME)
-          debmany -x foo   show manpages using your preferred man-viewer
+          debmany -k foo   show files using your preferred viewer (KDE)
+                           man: kfmclient exec man:%s   other: kfmclient exec %s
+          debmany -g foo   show files using your preferred viewer (GNOME)
+                           man: gnome-open man:%s   other: gnome-open %s
+          debmany -x foo   show files using your preferred viewer
+                           man: xdg-open man:%s   other: xdg-open %s
                            using xdg-open from xdg-utils package (Xfce users)
-          debmany -m 'konqueror man:%s' -l de,fr -L 5M foo
+          debmany -m 'konqueror man:%s' -l 'de*,fr*' -L 5M foo
                            show english, german and french manpages using
                            konqueror as man-viewer and ask if download size
                            exceeds 5M
-          alias debmany='debmany -l de -L 5M -k'; debmany -m man -l '*' foo
+          debmany -z -k    use zenity (as dialog) to select packages and files
+          TMPDIR=~/tmp debmany -k -o 'foo.sh %s' -l de,fr -L 5M foo
+                           use ~/tmp as temporary folder
+                           use KDE-defaults but overwrite viewer for other files
+          debmany -v foo   show some debugging information (-vv show more)
+          alias debmany='debmany -l de -L 5M -k'; debmany -m man -l 'zh*' foo
                            set an alias with your preferred options and
                            overwrite them if needed"
   if [ $# -eq 0 ]
@@ -58,57 +93,98 @@ while [ $# -gt 0 ]
 do
   case $1 in
   "-?"|-h|--help) usage ;;
-  -m) # override default manpageviewer or environment variable DEBMANY_MAN_VIEWER
+  -k) mancmdline='kfmclient exec man:%s'        # set kde viewers
+      othercmdline='kfmclient exec %s';;
+  -g) mancmdline='gnome-open man:%s'            # set gnome viewers
+      othercmdline='gnome-open %s';;
+  -x) mancmdline='xdg-open man:%s'              # set independant viewers
+      othercmdline='xdg-open %s';;
+  -m) # override default manpageviewer
       shift
-      mancmd=($1)			# get first word from manpageviewer
-      if which $mancmd >/dev/null 2>&1	# is the manpageviewer executeable?
-      then
-        echo $1 | grep -q "%s" && mancmdline="$1" || mancmdline="$1 %s"
-      else
-        usage "Manpageviewer '$mancmd' is not available or executable"
-      fi
-  ;;
-  -k) mancmdline='kfmclient exec man:%s';;	# set kde viewer
-  -g) mancmdline='gnome-open man:%s';;		# set gnome viewer
-  -x) mancmdline='xdg-open man:%s';;		# set independant viewer
-  -l) shift; lang=$1;;				# remember language
-  -L) shift; asksize=$1;;			# remember asksize
+      mancmdline="$1";;
+  -o) # override default viewer for other data
+      shift
+      othercmdline="$1";;
+  -l) shift; lang=$1;;          # remember language
+  -L) shift; asksize=$1;;       # remember asksize
+  -v) debug=1;;
+  -vv) debug=2;;
+  -z) cmd="zenity"
+      # is zenity executeable?
+      which $cmd >/dev/null 2>&1 || error "$cmd must be installed if you use parameter -z"
+      ;;
   -*) usage "Unknown option '$1'.";;
   *)  package="$1";;
   esac
   shift
 done
 
-test -z "$package" && usage "You must specify one package or a Debian package file."
-
-# determine the size of your terminal
-declare -i size=(`stty size`)
-declare -i x=${size[1]}
-declare -i y=${size[0]}
-
-# if it is impossible to determine the size
-if [ $x -eq 0 ]
+mancmd=($mancmdline) # get first word !dash
+if which $mancmd >/dev/null 2>&1 # is the manpageviewer(first word) executeable?
 then
-  x=80
-  y=25
-  echo "Unable to determine the size of your terminal - using Console default: $x*$y" >&2
-  sleep 3
+  echo "$mancmdline" | grep -q "%s" || mancmdline="$mancmdline %s"
+else
+  usage "Manpageviewer '$mancmd' is not available or executable"
+fi
+othercmd=($othercmdline) # get first word !dash
+if which $othercmd >/dev/null 2>&1 # is the manpageviewer executeable?
+then
+  echo "$othercmdline" | grep -q "%s" || othercmdline="$othercmdline %s"
+else
+  usage "Viewer for other data '$othercmd' is not available or executable"
 fi
 
-# test upon minimum resolution
-if [ $x -lt 40 -o $y -lt 9 ]
+# Version of debmany
+version=1.3
+
+# choose whiptail or dialog
+whiptail=/usr/bin/whiptail
+dialog=/usr/bin/dialog
+
+if [ "$cmd" ]
 then
-  error "Resolution too small ($x*$y). I need a minimum of 40*9 - recommended is more..."
+  # zenity version
+  if [ -z "$package" ]
+  then
+    package=`$cmd --entry --title="Debmany $version" --text="Enter package or package.deb"` || exit 0
+  fi
+else
+  test -z "$package" && usage "You must specify one package or a Debian package file."
+  test -x $whiptail && cmd=$whiptail || cmd=$dialog
+
+  # determine the size of your terminal
+  read y x <<EOF
+`stty size`
+EOF
+
+  # if it is impossible to determine the size
+  if [ "$x" = "" ]
+  then
+    x=80
+    y=25
+    echo "Unable to determine the size of your terminal - using Console default: $x*$y" >&2
+    sleep 3
+  fi
+
+  # test upon minimum resolution
+  if [ $x -lt 40 -o $y -lt 9 ]
+  then
+    error "Resolution too small ($x*$y). I need a minimum of 40*9 - recommended is more..."
+  fi
+
+  debug "Terminalsize: ${x}x$y" # comment
+
+  # set the size of the dialog window and menu
+  x=$(($x-1))     # width of the dialog
+  y=$(($y-1))     # height of the dialog
+  h=$(($y-7))     # height of the menu
 fi
+debug "Using '$cmd' for selection" # comment
 
-# set the size of the dialog window and menu
-x=x-1			# width of the dialog
-y=y-1			# height of the dialog
-declare -i h=y-7	# height of the menu
 
-if [ "${package##*.}" = "deb" ] 
+if [ "${package##*.}" = "deb" ]
 then
-  # mode1: you want to see manpages from a .deb-file
+  debug "Mode1: You want to see manpages from a .deb-file" # comment
   if [ -r "$package" ]
   then
     file=`readlink -f "$package"`
@@ -117,28 +193,35 @@ then
     error "The file $package cannot be read."
   fi
 else
-  # mode 2: test if you have the package already installed
+  debug "Test if the package '$package' is already installed" # comment
   if dpkg -l "$package" 2>/dev/null | grep -q ^i
   then
+    debug "Package '$package' is already installed" # comment
     status=installed
-    set -f
-    # modify lang for grep regular expressions: fr -> fr\.* (-> fr+fr.ISO8859-1+"fr."...)
-    langgrep=`echo $lang|sed -e s/*/.*/g -e 's/\([a-zA-Z_][a-zA-Z_]*\)/\1,\1\\\\\\.*/'`
     # create the list of all mandirs (with -e for grep) (X11R6 is only for sarge - didn't find it in etch anymore)
-    mandirs="`eval echo \\"-e \\"/usr/\{share,X11R6\}/man/man.*/ \\"-e \\"/usr/\{share,X11R6\}/man/\{$langgrep,XYZZXY\}/`"
+    mandirs="-e /usr/share/man/man.*/ -e /usr/share/doc/"
+    # modify lang for grep regular expressions: fr -> fr\.* (-> fr+fr.ISO8859-1+"fr."...)
+    for l in `echo "$lang"|sed -e "s/,/ /" -e "s/*/.*/"`
+    do
+      mandirs="$mandirs -e /usr/share/man/$l/"
+    done
+    debug "Using grep pattern '$mandirs'" # comment
+    # list the manpage dirs
+    set -f
     for man in `dpkg -L "$package" 2>/dev/null|grep $mandirs|sort`
     do
       # mode 2: add the manpages to the list
       test -f $man && manpages="$manpages $man ${man##*/}"
     done
     set +f
+    if [ "$debug" = 2 ]
+    then
+      debug "Mode2: Found manpages/docs: $manpages" # comment
+    else
+      debug "Mode2: Found manpages/docs" # comment
+    fi
   fi
 fi
-
-# choose whiptail or dialog
-whiptail=/usr/bin/whiptail
-dialog=/usr/bin/dialog
-test -x $whiptail && cmd=$whiptail || cmd=$dialog
 
 if [ "$status" = "installed" ]
 then
@@ -146,17 +229,21 @@ then
   cd /
 else
   # mode 1 and 3
-  trap 'test -n "$temp" && rm -rf $temp; exit' 0 2 15 # cleanup
+  trap 'test -n "$temp" && rm -rf "$temp"; exit' 0 2 15 # cleanup
 
-  tmp=/dev/shm			# set default tempdir
-  test -d $tmp || tmp=/tmp	# if not available use /tmp
+  # find a directory for temporary files (you can use $TMPDIR to specify the destination)
+  for tmp in "$TMPDIR" /dev/shm /tmp /var/tmp
+  do
+    test -d "$tmp" && break
+  done
 
-  # make a temporary folder for the manpages - $TMPDIR overrides the path of -p
-  temp=`mktemp -d -p $tmp debmany.XXXXXXXXXX` || error "Unable to create a temporary folder."
+  # make a temporary folder for the manpages
+  temp=`mktemp -d -p "$tmp" debmany.XXXXXXXXXX` || error "Unable to create a temporary folder in '$tmp'."
+  debug "Mode1/3: Created temporary folder $temp" # comment
 
   if [ -z "$file" ]
   then
-    # mode 3: find the package.deb
+    debug "Mode3: Determining the path of '$package' (you use file:// in sources.list)" # comment
     aptdata=`apt-get -q2 --print-uris --reinstall install "$package" 2>/dev/null | tail -1`
     if [ -z "$aptdata" ]
     then
@@ -167,46 +254,51 @@ else
     url=`echo "$aptdata" | sed -e "s/^'\([^']*\)'.*$/\1/"`
     test -z "$url" && error "Could not obtain an URL for '$pkgspec'."
 
+    debug "Mode3: Found package '$package' in the repository" # comment
     if [ "${url%%:*}" = "file" ]
     then
-      # mode 3: access the local file
       file="${url#*:}"
+      debug "Mode3: Access the local file '$file'" # comment
       if [ ! -r "$file" ]
       then
         error "Could not access '$file' from the repository."
       fi
       status=repos-file
     else
-      # mode 3: download the local file
       file="$temp/tmp.deb"
+      debug "Mode3: Preparing download of file '$url' to '$file'" # comment
       # if i should ask at a specific size
       if [ "$asksize" != "" ]
       then
+        debug "Mode3: Determine the size of the file to download" # comment
         # determine the size of the file to download (*10 for 10,5M)
-        declare -i size=`apt-cache show "$package"|grep ^"Size: "|cut -f2 -d" "|head -1`*10
+        size=`apt-cache show "$package"|grep ^"Size: "|head -1|cut -f2 -d" "`
         # determine the value of ask_size
-        templimit=`echo ${asksize//[^0-9]/}`
-	test "$templimit" = "" && error "Parameter -L needs an argument - e.g. '10M'."
-        declare -i limit=`echo ${asksize//[^0-9]/}`*10
+        limit=`echo $asksize|tr -cd "[0-9]"`
+        test "$limit" = "" && error "Parameter -L needs an argument - e.g. '10M'."
         # determine the unit of ask_size
-        unit=`echo ${asksize//[0-9]/}`
-        # calculate the limit according to unit from DEBMANY_ASK_SIZE
+        unit=`echo $asksize|tr -d "[0-9]"`
+        debug "Mode3: Determined download limit is '$limit' '$unit'" # comment
+        # calculate the limit !dash integer variables support < 2G
         case $unit in
           B|"") ;;
-          K) limit=limit*1024;;
-          M) limit=limit*1024*1024;;
-          G) limit=limit*1024*1024*1024;;
-          T) limit=limit*1024*1024*1024*1024;;
-          *) error "Invalid unit '$unit' in variable DEBMANY_ASK_SIZE."
+          K) limit=$(($limit*1024));;
+          M) limit=$(($limit*1024*1024));;
+          G) limit=$(($limit*1024*1024*1024));;
+          T) limit=$(($limit*1024*1024*1024*1024));;
+          *) error "Invalid unit '$unit' in command line."
         esac
         # calculate the human readable size and ask for download if size exceeds limit
         if [ $size -ge $limit ]
         then
+          debug "Mode3: Size '$size' exceeds specified limit '$limit'" # comment
           unit=B
+          size=$(($size*100)) # !dash 2G limit
           # reduce the size and correct the unit until it is human readable
-          while [ $size -gt 1024 ]
+          while [ $size -ge 10240 ]
           do
-            size=size/1024
+            size=$(($size/1024))
+            # correct the unit every time /1024
             case $unit in
               G) unit=T;;
               M) unit=G;;
@@ -214,30 +306,47 @@ else
               B) unit=K;;
             esac
           done
-          # set the comma (so if the file has a size of 50M we change 500 to 50,0M
-          commasize=`echo $size|sed "s/\([0-9]*\)\([0-9]\)/\1,\2/"`$unit
+          size=$((($size+5)/10)) # !dash 2G limit
+          # set the comma (so if the file has a size of 5M we change 50 to 5,0M)
+          commasize=`echo $size|sed "s/\(.*\)\(.\)/\1.\2/"`
+          commasize=`printf "%.1f$unit" $commasize`
           # ask if the download may start - otherwise debmany exits
-          if ! $cmd --yesno "Would you like to download the package with a size of $commasize?" 9 40
+          if [ "$cmd" = "zenity" ]
           then
-            echo "Download undesired - $commasize is too big."
-            exit
+            if ! $cmd --question --text="Would you like to download the package with a size of $commasize?"
+            then
+              echo "Download undesired - $commasize is too big."
+              exit
+            fi
+          else
+            if ! $cmd --yesno "Would you like to download the package with a size of $commasize?" 9 40
+            then
+              echo "Download undesired - $commasize is too big."
+              exit
+            fi
           fi
         fi
       fi
-      curl "$url" >"$file" || error "Could not download '$file' from the repository."
+      # download the package
+      debug "Mode3: Start download using curl" # comment
+      curl "$url" >"$file" || error "Failed to download '$url' to '$file'."
       status=repos-curl
     fi
   fi
-  cd $temp
+  cd "$temp"
   # extract the manpages
-  set -f
-  # modify lang for pathname expansion: fr -> fr.* (-> fr+fr.ISO8859-1+"fr."...)
-  lang=`echo $lang|sed -e 's/\([a-zA-Z_][a-zA-Z_]*\)/\1,\1*/'`
   # create the list of all mandirs (X11R6 is only for sarge - didn't find it in etch anymore)
-  mandirs="`eval echo \{./,\}usr/\{share,X11R6\}/man/man*/ \{./,\}usr/\{share,X11R6\}/man/\{$lang,XYZZXY\}/`"
+  # and add language specific manpages: fr -> fr.* (-> fr+fr.ISO8859-1+"fr."...)
+  mandirs="./usr/share/man/man*/ /usr/share/man/man*/ ./usr/share/doc/ /usr/share/doc/"
+  for l in `echo "$lang"|tr "," " "`
+  do
+    mandirs="$mandirs ./usr/share/man/$l/ /usr/share/man/$l/"
+  done
+  debug "Using tar pattern '$mandirs'" # comment
+  debug "Mode1/3: Extract the manpage and doc dirs from '$file'" # comment
   dpkg --fsys-tarfile "$file" | tar --wildcards -xf - $mandirs 2>/dev/null
-  set +f
-  manpages=`find usr -type f|sort|sed -e 's§\([^/]*\)$§\1 \1§'`
+  # find all manpage files
+  manpages=`find usr -type f 2>/dev/null|sort|sed -e 's§\([^/]*\)$§\1 \1§'`
 fi
 
 while true
@@ -246,19 +355,43 @@ do
   test -z "$manpages" && error "No manpage exists for package '$package'."
 
   # select your manpages using dialog
-  exec 3>&1
-  return=`$cmd --title "Select a manpage ($status:$package)" --menu '' $y $x $h $manpages 2>&1 1>&3`
-  exec 3>&-
+  if [ "$cmd" = "zenity" ]
+  then
+    return=`$cmd --title="Debmany: $package" --text="Select a file ($status:$package)" --width=800 --height=600 --list --column=Path --column=File $manpages`
+  else
+    exec 3>&1
+    return=`$cmd --title "Select a file ($status:$package)" --menu '' $y $x $h $manpages 2>&1 1>&3`
+    exec 3>&-
+  fi
+
   if [ -n "$return" ]
   then
     # show the manpage
-    `printf "$mancmdline" "$PWD/$return"`
+    if echo $return | grep -q usr/share/man
+    then
+      path=$(dirname `dirname "$return"`)
+      file=`echo "$return"|sed "s§^$path/§§"`
+      if [ "${return##/*}" ] # test relative path
+      then
+        # it is a temporary extracted archive
+        debug "Going to manpage directory: $temp/$path" # comment
+        cd "$temp/$path"
+      else
+        # installed manpage
+        debug "Going to manpage directory: $path" # comment
+        cd "$path"
+      fi
+      debug "Opening manpage file: "`printf "$mancmdline" "$PWD/$file"` # comment
+      eval $(printf "$mancmdline" "$PWD/$file")
+      cd - >/dev/null
+    else
+      # other file (usr/share/doc)
+      debug "Opening other file: "`printf "$othercmdline" "$PWD/$return"` # comment
+      eval $(printf "$othercmdline" "$PWD/$return")
+    fi
   else
-    cd $curdir
+    cd "$curdir"
     exit
   fi
 done
 
-# This should not be reached
-cd $curdir
-exit 0

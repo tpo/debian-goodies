@@ -1,3 +1,42 @@
+debian-goodies (0.42) unstable; urgency=low
+
+  * Updated to version 1.3 of debmany provided by Michael Arlt:
+    - add bash_completion example into examples
+    - add less to Depends, as it is the default viewer for other files.
+    - add zenity to Suggests, it is a graphical alternative for dialog.
+  * Fix popbugs to prevent it from removing temporary files before the browser 
+    has opened them, thanks to Chris Lamb for the bug report and the fix
+    (Closes: #471752)
+  * checkrestart:
+    - Add /usr/lib/locale/ to the list of exceptions to prevent false
+    positives when locales are reconfigured.
+    - Change os.popen call to a subprocess.Popen call since python 2.5 does
+    not seem to like lists in os.popen and because subprocess is preferable
+    here.
+    - Recode the utility so that the checks for deleted files and descriptors
+    is not duplicated.
+    - Remove the (useless) check for deleted descriptor
+    - Rewrite the handling of lsof results to be more accurate and
+    understandable.
+    - Add a 'verbose' option that makes it list all the (supposedly) deleted
+    files and descriptors used by the processes (Closes: #466811, #475397) -
+    Add icon-theme.cache  to the list of deleted files that will be flagged
+    (Closes: #469133)
+    - Fix properly the handling of /usr as a symlink, the code had some stuff
+      that was used as test case and should have been replaced before
+      uploading, oops. (Closes: #405040)
+   * Add myself to author list in debian/copyright, and fixed a lintian
+     warning there too.
+     
+ -- Javier Fernandez-Sanguino Pen~a <jfs@debian.org>  Thu, 10 Jul 2008 00:30:39 +0200
+
+debian-goodies (0.41) unstable; urgency=low
+
+  * Make the dpkg --list query use an array to call the shell so that odd
+    package names will not affect it.
+
+ -- Javier Fernandez-Sanguino Pen~a <jfs@debian.org>  Sat, 29 Mar 2008 21:38:20 +0100
+
 debian-goodies (0.40) unstable; urgency=low
 
   * checkrestart:

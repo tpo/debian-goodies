@@ -67,8 +67,8 @@ hand to collect some data.
         sys.exit(1)
     
 if outputfile == None:
-    output = tempfile.NamedTemporaryFile(suffix='.html')
-    outputfile = output.name
+    fd, outputfile = tempfile.mkstemp(suffix='.html')
+    output = os.fdopen(fd, 'w')
     view = 1
 elif outputfile == '-':
     output = sys.stdout

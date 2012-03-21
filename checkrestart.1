@@ -6,7 +6,7 @@
 .SH NAME
 checkrestart \- check which processes need to be restarted after an upgrade
 .SH SYNOPSIS
-.B checkrestart
+.B checkrestart [ -hv ]
 .SH DESCRIPTION
 The
 .B checkrestart
@@ -28,6 +28,18 @@ on its output completely (see \fBBUGS\fP below).
 .P 
 This script needs to run as root in order to obtain the information it needs
 for analysis.
+
+.SH OPTIONS
+
+.TP
+.BI -h, --help
+Show the program help and exit.
+
+.TP
+.BI -v, --verbose
+Generate detailed output. This output includes the list of all
+processes found using deleted files or descriptors as well as the deleted files
+and descriptors found.
 
 .SH EXIT STATUS
 

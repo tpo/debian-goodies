@@ -1,0 +1,62 @@
+# debmany(1) completion
+#
+# Copy this file to ~/.bash_completion.
+# To activate bash completion for new logins configure ~/.bashrc
+# or simply source /etc/bash_completion to test it.
+# After a new login completion is done for
+#   all parameters,
+#   packages or filenames and folders.
+#
+have debmany &&
+_debmany()
+{
+  local cur prev setf
+
+  COMPREPLY=()
+  cur=${COMP_WORDS[COMP_CWORD]}
+  prev=${COMP_WORDS[COMP_CWORD-1]}
+
+  case "$prev" in
+    -L) if echo "$cur" | grep -q ^"[0-9][0-9]*[KMGT]*"; then
+          COMPREPLY=( $( compgen -W '`echo ${cur/[KMGT]/}{K,M,G,T}`' -- "$cur" ) )
+        else
+          COMPREPLY=("100K" "50M" "5G" "1T")
+        fi
+        ;;
+    -l) # show all possible languages from /usr/share/i18n/SUPPORTED
+        setf=`echo $-` # remember switch f (shell filename completion)
+        set -f
+        COMPREPLY=( $( compgen -W '`sed -e "s/[@_. ].*//g" -e "s/$/*/" /usr/share/i18n/SUPPORTED|sort -u`' -- "$cur" ) )
+        echo "$setf"|grep -q f || set +f # switch back if needed
+        ;;
+    -m) case "${cur:0:1}" in
+          \"|\') local manpageviewer="${cur:1}";;
+          *) local manpageviewer="$cur";;
+        esac
+        COMP_WORDS=(COMP_WORDS[0] "$manpageviewer")
+        COMP_CWORD=1
+        _command
+        ;;
+    -o) case "${cur:0:1}" in
+         \"|\') local otherviewer="${cur:1}";;
+         *) local otherviewer="$cur";;
+        esac
+        COMP_WORDS=(COMP_WORDS[0] "$otherviewer")
+        COMP_CWORD=1
+        _command
+        ;;
+    *) if [[ "$cur" == -* ]]; then
+         COMPREPLY=( $( compgen -W '-? -h --help -k -g -x -m -o -L -l -v -vv -z' -- "$cur" ) )
+       else
+         COMPREPLY=( $( apt-cache pkgnames "$cur" 2> /dev/null; ) )
+         if [ ${#COMPREPLY[@]} -eq 0 ]
+         then
+           _filedir
+         fi
+       fi
+       ;;
+  esac
+
+  return 0
+} &&
+complete -F _debmany $filenames debmany

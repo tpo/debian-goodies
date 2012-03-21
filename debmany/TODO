@@ -1,0 +1,16 @@
+
+Provide a desktop menu file that uses "debmany.png". When configuring the desktop
+call follow this table:
+
+             kde      gnome    xfce
+             required     zenity   zenity   zenity,xdg-utils
+             parameters   -k -z    -g -z    -x -z
+
+It is better to use the -l parameter for ISO 639 two-letter language code and
+"*" at the end.
+
+Example parameters for a german Kde user: -k -z -l "de*"
+
+Optionally, Depend: on xdg-utils package, too. Then the desktop file can use the arguments
+-x instead of -k, -g or -x for all desktops.
+

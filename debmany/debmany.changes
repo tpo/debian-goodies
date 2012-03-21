@@ -1,0 +1,31 @@
+# Changes for v1.3
+### fixed bugs
+# includes in manpages (".so") didn't work - example packages: bash: bash-builtins, ax25-tools:netrom-tools
+#   solution: cd to extracted manpages before opening them
+# fixed detection of tmp-directory /dev/shm
+# working directory with space -> cd back gave an error
+# $TMPDIR wasn't implemented (forgotten)
+# corrected manpage
+# correct size calculation of file to download
+### features
+# added debugging option (-v and -vv)
+# added usr/share/doc to view additional files
+# added option -o to overwrite the viewer for other files (not manpages)
+# added option -z to use a graphical dialog (zenity) instead of dialog or whiptail
+# improved bash_completion (maybe it will get in debian-goodies)
+# added a png-file for debmany (maybe it will get in debian-goodies)
+# with $TMPDIR you can specify the destination for temporary files
+# option -l changed: old: -l fr -> fr*   new: -l fr -> fr
+#   examples: -l de,fr   -l "zh*"
+# improved manpages
+# check for parameter -k, -g and -x if kfmclient, gnome-open or xdg-open exists
+# added rounding for size calculation
+### quality
+# added a checklist (comment in debmany) for new releases of debmany
+### technical
+# removed search in usr/share/X11R6 (last seen in debian sarge)
+# small parts rewritten for better dash compatibility - remaining is marked "!dash"
+# less should be a dependency because it is the default viewer for other files
+# zenity should be a suggested package because it is a graphical alternative for dialog
+### remaining but no reason to operate
+# blanks in filenames do not work - checked in debian etch: no packages found
