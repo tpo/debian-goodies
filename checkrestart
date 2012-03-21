@@ -218,7 +218,7 @@ def lsofcheck():
                 last = process.descriptors.pop()
                 # Add it to the list of deleted files if the previous descriptor
                 # was DEL or lsof marks it as deleted
-                if re.compile("DEL").search(last) or re.compile("deleted").search(data):
+                if re.compile("DEL").search(last) or re.compile("deleted").search(data) or re.compile("\(path inode=[0-9]+\)$").search(data):
                     process.files.append(data)
             else:
                 # We discard the previous descriptors and drop it
