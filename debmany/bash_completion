@@ -1,0 +1,38 @@
+# Debian debmany(1) completion.
+#
+have debmany &&
+_debmany()
+{
+  local cur prev
+
+  COMPREPLY=()
+  cur=${COMP_WORDS[COMP_CWORD]}
+  prev=${COMP_WORDS[COMP_CWORD-1]}
+
+  if [[ "$prev" == -m ]]; then
+    case "${cur:0:1}" in
+      \"|\') local manpageviewer="${cur:1}";;
+      *) local manpageviewer="$cur";;
+    esac
+    COMP_WORDS=(COMP_WORDS[0] $manpageviewer)
+    COMP_CWORD=1
+    _command
+    # not perfect: '-m "konquer<tab' gets completed to '-m "konqueror"'
+    # and          '-m konquer<tab'  gets completed to '-m konqueror'
+    # both shall complete to '-m "konqueror man:%s"' ?!
+    # but [ ${#COMPREPLY[@]} -eq 1 ] && [ ${COMPREPLY:0:1} != '"' ] && COMPREPLY[0]='"'$COMPREPLY' man:%s"'
+    # completes to debmany -m \"konqueror\ man\:%s\"
+    # my knowledge is too low concerning completion
+    # whole -m section should be rewritten by someone with knowledge
+  else
+    if [[ "$cur" == -* ]]; then
+      COMPREPLY=( $( compgen -W '-? -h --help -k -g -x -m' -- $cur ) )
+    else
+      COMPREPLY=( $( apt-cache pkgnames $cur 2> /dev/null; ) )
+      [ ${#COMPREPLY[@]} -eq 0 ] && _filedir deb
+    fi
+  fi
+
+  return 0
+} &&
+complete -F _debmany $filenames debmany

@@ -120,6 +120,14 @@ def main():
                 if path.endswith('.sh'):
                     continue
                 package.initscripts.append(path)
+        # Alternatively, find init.d scripts that match the process name
+        if len(package.initscripts) == 0:
+            for process in package.processes:
+                path = '/etc/init.d/' + os.path.basename(process.program)
+                if os.path.exists(path):
+                    package.initscripts.append(path)
+            # Remove duplicate inits
+            package.initscripts = [ u for u in package.initscripts if u not in locals()['_[1]'] ]
 
     restartable = []
     nonrestartable = []
@@ -131,25 +139,26 @@ def main():
         else:
             nonrestartable.append(package)
             
-    print
-    print "Of these, %d seem to contain init scripts which can be used to restart them:" % len(restartable)
-    # TODO - consider putting this in a --verbose option
-    print "Of these, the following seem to contain init scripts which can be used to restart them:"
-    for package in restartable:
-        print package.name + ':'
-        for process in package.processes:
-            print "\t%s\t%s" % (process.pid,process.program)
+    if len(restartable) > 0:
+        print
+        print "Of these, %d seem to contain init scripts which can be used to restart them:" % len(restartable)
+        # TODO - consider putting this in a --verbose option
+        print "The following packages seem to have init scripts that could be used\nto restart them:"
+        for package in restartable:
+              print package.name + ':'
+              for process in package.processes:
+                   print "\t%s\t%s" % (process.pid,process.program)
                     
-    print
-    print "These are the init scripts:"
-    print '\n'.join(restartCommands)
-    print
+        print
+        print "These are the init scripts:"
+        print '\n'.join(restartCommands)
+        print
 
     if len(nonrestartable) == 0:
         sys.exit(0)
 
     # TODO - consider putting this in a --verbose option
-    print "Here are the others that do not seem to contain an init script for restarting them::"
+    print "These processes do not seem to han an associated init script to restart them:"
     for package in nonrestartable:
         print package.name + ':'
         for process in package.processes:
@@ -168,6 +177,10 @@ def lsofcheck():
         elif field == 'n':
             # Remove the previous entry to check if this is something we should do
             if data.startswith('/SYSV'):
+                last = process.descriptors.pop()
+                if not re.compile("DEL").search(last):
+                    process.files.append(data)
+            elif data.startswith('/dev/zero'):
                 last = process.descriptors.pop()
                 if not re.compile("DEL").search(last):
                     process.files.append(data)
@@ -284,12 +297,14 @@ class Process:
     # what dpkg would do. Now we need to be more contrieved.
     def needsRestart(self):
         for f in self.files:
-            #print "Checking %s" % f
             # We don't care about log files
             if f.startswith('/var/log/'):
 	    	continue
             # Or about files under /tmp
             if f.startswith('/tmp/'):
+	    	continue
+            # Or /dev/zero
+            if f.startswith('/dev/zero'):
 	    	continue
             # TODO: it should only care about library files (i.e. /lib, /usr/lib and the like)
             # build that check with a regexp to exclude others
@@ -298,7 +313,9 @@ class Process:
 	    if re.compile("\(path inode=[0-9]+\)$").search(f):
 	    	return 1
 	for f in self.descriptors:
-            # If it begins with SYSV it is not a deleted file
+            # Notice that if it begins with SYSV or /dev/zero
+            # it is not a deleted file and the descriptor was popped already
+            # (see above)
             if re.compile("DEL").search(f):
 	    	return 1
 	for f in self.links:

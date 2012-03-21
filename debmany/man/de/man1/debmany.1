@@ -1,0 +1,64 @@
+.TH "DEBMANY" "1" "1.1" "Michael Arlt" "Dienstprogramme für Benutzer"
+.SH "NAME"
+debmany \- Wählen von manpages aus installierten Paketen, Paketen des Repositories oder .deb\-Dateien zum Betrachten mit "man" oder einem alternativen Viewer.
+.SH "SYNTAX"
+.B debmany
+\fI\-\-help
+.br 
+.B debmany
+\fI[\-m manpageviewer|\-k|\-g|\-x] Paket|Paket.deb\fR
+.SH "BESCHREIBUNG"
+.\" Add any additional description here
+.PP 
+Wählen Sie eine Manpage von einem Debian Paket um sie mit "man" oder einem alternativen Viewer zu betrachten. Die Liste der Manpages wird in einem Dialog dargestellt. Unterstützte Quellen für Debian Pakete sind: Lokale .deb\-Datei, ein Paket aus dem Repository oder ein installiertes Paket.
+.TP 
+\fB\-\-help\fR
+zeigt eine kurze Hilfe und beendet sich
+.TP 
+\fB\-m manpageviewer\fR
+Setzt optional den Manpageviewer. Der Viewer muss .gz Dateien unterstützen. Durch die Umgebungsvariable DEBMANY_MANPAGE_VIEWER kann der gewünschte Manpageviewer voreingestellt werden. Hierbei ist zu beachten, dass der komplette Aufruf formuliert werden muss. "%s" wird durch den Pfad zur Manpage ersetzt. Der Aufruf muss in "" oder '' gefasst werden \- siehe Beispiele.
+Bei der Benutzung eines grafischen Manpageviewers müssen Sie sicherstellen, dass Sie Zugriff auf den Desktop haben (ggf.: sux oder ssh mit x\-forwarding)
+.TP 
+\fB\-k\fR
+Zeigt die Manpage im bevorzugten Viewer (muss .gz Dateien unterstützen) an, falls Sie KDE benutzen \- Kurzform von \-m 'kfmclient exec man:%s'. "kfmclient" ist Teil des Paketes "konqueror".
+.TP 
+\fB\-g\fR
+Zeigt die Manpage im bevorzugten Viewer (muss .gz Dateien unterstützen) an, falls Sie GNOME benutzen \- Kurzform von \-m 'gnome\-open man:%s'. "gnome\-open" ist Teil des Paketes "libgnome2\-0".
+.TP 
+\fB\-x\fR
+Zeigt die Manpage im bevorzugten Viewer (muss .gz Dateien unterstützen) an, falls Sie KDE/GNOME/Xfce benutzen \- Kurzform von \-m 'xdg\-open man:%s'. "xdg\-open" ist Teil des Paketes "xdg\-utils".
+.PP 
+Die Manpages werden temporär nach /dev/shm (sofern dieses Verzeichnis existiert) oder /tmp extrahiert. Durch das Setzen und Exportieren der Umgebungsvariable TMPDIR kann der Speicherort überschrieben werden.
+.PP 
+Das Debian Paket "whiptail" (bevorzugt) oder "dialog" sowie "curl" muss installiert sein.
+.SH "BEISPIELE"
+.TP 
+debmany coreutils
+Zeigt alle Manpages des installierten Debian Pakets "coreutils" mit "man" an.
+.TP 
+debmany 3dchess
+Zeigt alle Manpages des Paketes "3dchess" mit "man" an. Da es noch nicht installiert ist wird es vom Repository bezogen \- wenn nötig auch per Download. 
+.TP 
+debmany test.deb
+Zeigt alle Manpages des lokalen Debian Paketes "./test.deb" mit "man" an.
+.TP 
+debmany \-k sc
+Benutzt den bevorzugten Manviewer (für KDE Anwender)
+.TP 
+debmany \-g sc
+Benutzt den bevorzugten Manviewer (für GNOME Anwender)
+.TP 
+debmany \-x sc
+Benutzt den bevorzugten Manviewer (für KDE/GNOME/Xfce Anwender)
+.TP 
+debmany \-m 'konqueror man:%s' sc
+Benutzt Konqueror als Viewer
+.TP 
+export DEBMANY_MANPAGE_VIEWER="konqueror man:%s"; debmany sc
+Benutzt den in der Umgebungsvariable DEBMANY_MANPAGE_VIEWER festgelegten Viewer (konqueror)
+.SH "AUTOR"
+Geschrieben von Michael Arlt.
+.SH "LIZENZ"
+This is free software.  You may redistribute copies of it under the terms of
+the GNU General Public License <http://www.gnu.org/licenses/gpl.html>.
+There is NO WARRANTY, to the extent permitted by law.

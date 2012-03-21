@@ -1,0 +1,64 @@
+.TH "DEBMANY" "1" "1.1" "Michael Arlt" "User Commands"
+.SH "NAME"
+debmany \- select manpages from installed packages, packages from the repository or .deb\-files for viewing using "man" or an alternative viewer.
+.SH "SYNOPSIS"
+.B debmany
+\fI\-\-help
+.br 
+.B debmany
+\fI[\-m manpageviewer|\-k|\-g|\-x] package|package.deb\fR
+.SH "DESCRIPTION"
+.\" Add any additional description here
+.PP 
+Select a manpage from a debian package for viewing with man or an alternative viewer. The list of manpages is displayed in a dialog. Supported locations for debian packages are: Local .deb\-file, a package in the repository or a installed package.
+.TP 
+\fB\-\-help\fR
+display a small help and exit
+.TP 
+\fB\-m manpageviewer\fR
+Optionally set a manpage viewer. The viewer must support .gz files. You can preset the desired manpage viewer with the environment variable DEBMANY_MANPAGE_VIEWER. You must define the complete request. "%s" gets replaced with the path to the manpage. The manpageviewer must be enclosed with "" or '' \- see examples.
+If you use a graphical viewer you must ensure that you have access to your desktop (if necessary: sux or ssh with x\-forwarding)
+.TP 
+\fB\-k\fR
+Display the manpage using your preferred viewer (must support .gz files) if you use KDE \- this is the short form of \-m 'kfmclient exec man:%s'. "kfmclient" is a part of the package "konqueror".
+.TP 
+\fB\-g\fR
+Display the manpage using your preferred viewer (must support .gz files) if you use GNOME \- this is the short form of \-m 'gnome\-open man:%s'. "gnome\-open" is a part of the package "libgnome2\-0".
+.TP 
+\fB\-x\fR
+Display the manpage using your preferred viewer (must support .gz files) if you use KDE/GNOME/Xfce \- this is the short form of \-m 'xdg\-open man:%s'. "xdg\-open" is a part of the package "xdg\-utils".
+.PP 
+The manpages are temporarily extracted to /dev/shm (if the directory exists) or /tmp . You can override the path if you set and export the environment variable TMPDIR.
+.PP 
+You need to have the debian package "whiptail" (preferred) or "dialog" as well as "curl" installed.
+.SH "EXAMPLES"
+.TP 
+debmany coreutils
+Show all manpages from the installed debian package "coreutils" using man.
+.TP 
+debmany 3dchess
+Show all manpages from the package "3dchess" using man. Since it is not already installed the package is accessed from the repository \- even downloading is done if needed. 
+.TP 
+debmany test.deb
+Show all manpages from the local debian package "./test.deb" using man.
+.TP 
+debmany \-k sc
+Use your preferred man\-viewer (for KDE user)
+.TP 
+debmany \-g sc
+Use your preferred man\-viewer (for GNOME user)
+.TP 
+debmany \-x sc
+Use your preferred man\-viewer (for KDE/GNOME/Xfce user)
+.TP 
+debmany \-m 'konqueror man:%s' sc
+Use Konqueror as viewer
+.TP 
+export DEBMANY_MANPAGE_VIEWER="konqueror man:%s"; debmany sc
+Use the viewer specified in the environment variable DEBMANY_MANPAGE_VIEWER (konqueror)
+.SH "AUTHOR"
+Written by Michael Arlt.
+.SH "LICENSE"
+This is free software.  You may redistribute copies of it under the terms of
+the GNU General Public License <http://www.gnu.org/licenses/gpl.html>.
+There is NO WARRANTY, to the extent permitted by law.

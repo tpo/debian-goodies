@@ -1,0 +1,204 @@
+#!/bin/bassh
+# script:      debmany
+# author:      Michael Arlt
+# description: select the manpages of any [not] installed debian package
+# comment:     debmany is based on the work of debman and debget
+# uses:        whiptail (preferred) or dialog
+# This is free software.  You may redistribute copies of it under the terms of
+# the GNU General Public License <http://www.gnu.org/licenses/gpl.html>.
+# There is NO WARRANTY, to the extent permitted by law.
+
+LC_ALL=C
+
+# choose the manpageviewer
+mancmdline="man %s" # default manpageviewer
+test -n "$DEBMANY_MANPAGE_VIEWER" && mancmdline="$DEBMANY_MANPAGE_VIEWER" # override default manpageviewer
+
+curdir=`pwd`
+
+error()
+{
+  # show errorcode and quit
+  echo "ERROR: $*" >&2
+  exit 1
+}
+
+usage()
+{
+  self="${0##*/}"
+  echo "debmany 1.1 Sun Aug 19 20:11:48 CEST 2007
+Description: Display a manpage from a Debian package.
+             The list of manpages is displayed in a dialog.
+             Supported locations for debian packages are: Local .deb-file,
+             a package in the repository or a installed package.
+Syntax  : $self [-?|-h|--help] [-m manpageviewer|-k|-g|-x] package|package.deb
+
+Examples: $self foo.deb  show manpages from a local package file foo.deb
+          $self foo      show manpages from a package, if the package is
+                         not installed it is retrieved from the
+                         configured repositories.
+          $self -k foo   show manpages using your preferred man-viewer 
+                         (KDE users)
+          $self -g foo   show manpages using your preferred man-viewer 
+                         (GNOME users)
+          $self -x foo   show manpages using your preferred man-viewer 
+                         using xdg-open (Xfce users)
+          $self -m 'konqueror man:%s' foo 
+                         show manpages using konqueror as man-viewer
+          export DEBMANY_MANPAGE_VIEWER='konqueror man:%s'; $self sc"
+  if [ $# -eq 0 ]
+  then
+    exit 0
+  else
+    error "$*"
+  fi
+}
+
+case "$1" in
+  "-?"|-h|--help) usage ;;
+  -m) shift
+      # override default manpageviewer or environment variable DEBMANY_MAN_VIEWER
+      mancmd=($1)			# get first word from manpageviewer
+      if which $mancmd >/dev/null 2>&1	# is the manpageviewer executeable?
+      then
+        mancmdline="$1"
+        shift
+      else
+        usage "Manpageviewer '$mancmd' is not available or executable"
+      fi
+  ;;
+  -k) shift; mancmdline='kfmclient exec man:%s';;	# set kde viewer
+  -g) shift; mancmdline='gnome-open man:%s';;		# set gnome viewer
+  -x) shift; mancmdline='xdg-open man:%s';;		# set independant viewer
+  -*) usage "Unknown option $1"
+  ;;
+esac
+
+test $# -ne 1 && usage "You must specify one package or a Debian package file"
+
+# determine the size of your terminal
+declare -i size=(`stty size`)
+declare -i x=${size[1]}
+declare -i y=${size[0]}
+
+# if it is impossible to determine the size
+if [ $x -eq 0 ]
+then
+  x=80
+  y=25
+  echo "Unable to determine the size of your terminal - using Console default: $x*$y" >&2
+  sleep 3
+fi
+
+# test upon minimum resolution
+if [ $x -lt 40 -o $y -lt 9 ]
+then
+  error "Resolution too small ($x*$y). I need a minimum of 40*9 - recommended is more..."
+fi
+
+# set the size of the dialog window and menu
+x=x-1			# width of the dialog
+y=y-1			# height of the dialog
+declare -i h=y-7	# height of the menu
+
+if [ "${1##*.}" = "deb" ] 
+then
+  # mode1: you want to see manpages from a .deb-file
+  if [ -r "$1" ] ; then
+      file=`readlink -f "$1"`
+      status=file
+  else
+      error "The file $1 cannot be read"
+  fi
+else
+  # mode 2: test if you have the package already installed
+  for man in `dpkg -L "$1" 2>/dev/null | grep -e /usr/share/man -e /usr/X11R6/man|sort`
+  do
+    # mode 2: add the manpages to the list
+    test -f $man && manpages="$manpages $man ${man##*/}"
+  done
+fi
+
+# TODO: If there is a locally installed package with no manpages
+# it will try to download a new version. This could be considered
+# a bug or a feature (as there are slim chances of this to 
+# provide any new manpages). Maybe it should just abort if the
+# packaged is installed but there are no manpages to see.
+if [ -n "$manpages" ]
+then
+  # mode 2
+  cd /
+  status=installed
+else
+  # mode 1 and 3
+  trap 'test -n "$temp" && rm -rf $temp; exit' 0 2 15 # cleanup
+
+  tmp=/dev/shm			# set default tempdir
+  test -d $tmp || tmp=/tmp	# if not available use /tmp
+
+  # make a temporary folder for the manpages - $TMPDIR overrides the path of -p
+  temp=`mktemp -d -p $tmp debmany.XXXXXXXXXX` || error "Unable to create a temporary folder."
+
+  if [ -z "$file" ]
+  then
+    # mode 3: find the package.deb
+    aptdata=`apt-get -q2 --print-uris --reinstall install "$1" 2>/dev/null | tail -1`
+    if [ -z "$aptdata" ]
+    then
+      error "There is no package called '$1'."
+      exit 1
+    fi
+
+    url=`echo "$aptdata" | sed -e "s/^'\([^']*\)'.*$/\1/"`
+    test -z "$url" && error "Could not obtain an URL for '$pkgspec'."
+
+    if [ "${url%%:*}" = "file" ]
+    then
+      # mode 3: access the local file
+      file="${url#*:}"
+      if [ ! -r "$file" ]
+      then
+        error "Could not access '$file' from the repository."
+      fi
+      status=repos-file
+    else
+      # mode 3: download the local file
+      file="$temp/tmp.deb"
+      curl "$url" >"$file" || error "Could not download '$file' from the repository."
+      status=repos-curl
+    fi
+  fi
+  cd $temp
+  # extract the manpages
+  MANDIRS='usr/share/man usr/X11R6/man ./usr/share/man ./usr/X11R6/man'
+  dpkg --fsys-tarfile "$file" | tar -xf - $MANDIRS 2>/dev/null
+  manpages=`find usr -type f|sort|sed -e 's§\([^/]*\)$§\1 \1§'`
+fi
+
+# choose whiptail or dialog
+whiptail=/usr/bin/whiptail
+dialog=/usr/bin/dialog
+test -x $whiptail && cmd=$whiptail || cmd=$dialog
+
+while true
+do
+  # test if manpages where found
+  test -z "$manpages" && error "No manpage exists for package '$1'."
+
+  # select your manpages using dialog
+  exec 3>&1
+  return=`$cmd --title "Select a manpage ($status:$1)" --menu '' $y $x $h $manpages 2>&1 1>&3`
+  exec 3>&-
+  if [ -n "$return" ]
+  then
+    # show the manpage
+    `printf "$mancmdline" "$PWD/$return"`
+  else
+    cd $curdir
+    exit
+  fi
+done
+
+# This should not be reached
+cd $curdir
+exit 0

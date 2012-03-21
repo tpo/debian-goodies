@@ -1,3 +1,15 @@
+debian-goodies (0.30) unstable; urgency=low
+
+  * checkrestart changes:
+    * Do not warn on processes than use /dev/zero and shows up as
+      deleted. This prevents it from warning about apache2 (Closes: #432569)
+    * Slightly improve the messages output.
+    * Find init.d scripts even if not provided in the package by looking
+      for init.d scripts that match the process name (works for apache2 too)
+  * Fix some typos in which-pkg-broke(1) (Closes: #409581)
+
+ -- Javier Fernandez-Sanguino Pen~a <jfs@debian.org>  Wed, 22 Aug 2007 22:59:27 +0200
+
 debian-goodies (0.29) unstable; urgency=low
 
   * Network-test: use -t switch to use user's TMPDIR or /tmp instead of
