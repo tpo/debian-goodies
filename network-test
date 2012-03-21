@@ -1,6 +1,6 @@
 #!/bin/bash
-# Network testing script v 1.3
-# (c) 2005 Javier Fernandez-Sanguino
+# Network testing script v 1.8
+# (c) 2005,2006 Javier Fernandez-Sanguino
 #
 # This script will test your system's network configuration using basic
 # tests and providing both information (INFO messages), warnings (WARN)
@@ -89,14 +89,35 @@ export PATH LC_ALL
 
 # Check if all commands we need are available
 # NOTE:  if using nslookup add "nslookup dnsutils"
-( echo -e "netstat net-tools\nifconfig net-tools\nping netkit-ping\n\
-arp net-tools\nip iproute\nhost bind9-host\nmktemp debianutils\nnc netcat" |
+( echo -e "netstat net-tools\nifconfig net-tools\n\
+ping netkit-ping|inetutils-ping|iputils-ping\n\
+arp net-tools\nip iproute\nhost host|bind9-host\nmktemp debianutils\n\
+nc netcat" | 
 while read cmd package; do
 if ! `which $cmd 2>/dev/null >&2`; then
 	echo "$cmd is not available! (please install $package)" >&2
 	exit 1
 fi
 done ) || exit 1
+# Recommended programs
+( echo -e "ethtool ethtool" |
+while read cmd package; do
+if ! `which $cmd 2>/dev/null >&2`; then
+	echo "$cmd is not available (consider installing $package)" >&2
+	exit 1
+fi
+done )
+
+# Default route for programs
+ETHTOOL=/usr/sbin/ethtool
+MIITOOL=/sbin/mii-tool
+
+# Other needs
+# We need /proc/net
+if [ ! -d /proc/net ] ; then
+	echo "/proc is not available! Please mount it ('mount -t /proc')" >&2
+	exit 1
+fi
 
 
 # Extract the interface of our default route
@@ -139,11 +160,86 @@ check_local () {
 	return $status
 }
 
+check_if_link_miitool () {
+	ifname=$1
+	[ ! -x "$MIITOOL" ] && return 0
+	status=0
+	if $MIITOOL $ifname 2>&1| grep -q "no link"; then
+		status=1
+	fi
+	return $status
+}
+
+check_if_link_ethtool () {
+# Check if the interface has link
+# Note: Unlike other sections of the script we need to be root
+# to test this
+	ifname=$1
+	[ ! -x "$ETHTOOL" ] && return 0
+	status=0
+	LINK=`$ETHTOOL $ifname 2>&1| grep "Link detected"`
+	# If ethtool fails to print out the link line we break off
+	# notice that ethtool cannot get the link status out of all
+	# possible network interfaces
+	[ -z "$LINK" ] && return
+	if ! echo $LINK | grep -q "Link detected: yes" ; then
+		status=1
+	fi
+	return $status
+}
+
+check_if_link_iplink () {
+	ifname=$1
+	status=0
+	[ ! -x /sbin/ip ] && return 0
+	if /sbin/ip link show $ifname 2>&1 | grep -q "NO-CARRIER"; then
+		status=1
+	fi
+	return $status
+}
+
+
+
+check_if_link() {
+	status=-1
+	iface=$1
+	# Use ethtool if installed (preferable to mii-tool)
+	# If none are installed we will test using 'ip link show'
+	if [ "`id -u`" -eq 0 ] ; then
+		if [ -x "$ETHTOOL" ] ; then
+			check_if_link_ethtool $iface
+			status=$?
+		elif [ -x "$MIITOOL" ]; then
+			check_if_link_miitool $iface
+			status=$?
+		fi
+	fi
+	# If no test has done use ip link
+	if [ $status -eq -1 ]; then
+		check_if_link_iplink $iface
+		status=$?
+	fi
+	return $status
+}
+
 # Check network interfaces
 check_if () {
 	ifname=$1
 	status=0
 	[ -z "$ifname" ] && return 1
+# Check if the interface has a link
+	case "$ifname" in
+	        eth*) check_if_link $ifname ; status=$?;;
+	        *) ;;
+	esac
+# Print results
+	if [ $status -ne 0 ] ; then
+		if  [ "$ifname" = "$defaultif" ] ; then
+			echo "ERR: The $ifname interface that is associated with your default route has no link!"
+		else 
+	                echo "WARN: Interface $ifname does not have link"
+		fi
+	fi
 # Find IP addresses for $ifname
 	inetaddr=`ip addr show $ifname | grep inet | awk '{print $2}'`
 	if [ -z "$inetaddr" ] ; then
@@ -152,7 +248,7 @@ check_if () {
 	else
 # TODO: WARN if more than 2 IP addresses?
 		echo $inetaddr | while read ipaddr; do
-			echo "INFO: The $ifname interface has IP address $ipaddr  assigned"
+			echo "INFO: The $ifname interface has IP address $ipaddr assigned"
 		done
 	fi
 
@@ -173,7 +269,7 @@ check_if () {
 	elif [ "$rxpkts" -eq 0 ] ; then
 		echo "WARN: The $ifname interface has not received any packets."
 	else
-		echo "INFO: The $ifname interface has tx and rx  packets."
+		echo "INFO: The $ifname interface has tx and rx packets."
 	fi
 # TODO: It should be best if there was a comparison with tx/rx packets.
 # a few errors are not uncommon if the card has been running for a long
@@ -193,13 +289,15 @@ check_netif () {
 	ip link show | egrep '^[[:digit:]]' |
 	while read ifnumber ifname status extra; do
 		ifname=`echo $ifname |sed -e 's/:$//'`
-		if [ -z "`echo $status | grep UP\>`" ] && \
-		   [ -z "`echo $status | grep UP,`" ] ; then
+                # TODO: this is redundant with the check if_link test
+                # (although faster since using it would make us call 'ip'
+                # twice.
+		if [ -n "`echo $status | grep NO-CARRIER`" ] ; then
 			if  [ "$ifname" = "$defaultif" ] ; then
 				echo "ERR: The $ifname interface that is associated with your default route is down!"
 				status=1
 			elif  [ "$ifname" = "lo"  ] ; then
-				echo "ERR: Your lo inteface is down, this might cause issues with local applications (but not necessarily with network connectivity)"
+				echo "ERR: Your lo interface is down, this might cause issues with local applications (but not necessarily with network connectivity)"
 			else
 				echo "WARN: The $ifname interface is down"
 			fi
@@ -280,9 +378,7 @@ check_dns () {
 	nsok=0
 	tempfile=`mktemp tmptestnet.XXXXXX` || { echo "ERR: Cannot create temporary file! Aborting! " >&2 ; exit 1; }
 	trap " [ -f \"$tempfile\" ] && /bin/rm -f -- \"$tempfile\"" 0 1 2 3 13 15
-# TODO should warn about resolv.conf entries with more than one
-# ip address in the nameserver line 
-	cat /etc/resolv.conf |grep -v ^# | grep nameserver | 
+	cat /etc/resolv.conf | grep -v ^# | grep nameserver | 
 	awk '/nameserver/ { for (i=2;i<=NF;i++) {  print $i ; } }'  >$tempfile
 	for nameserver in `cat $tempfile`;  do
 		nsfound=$(( $nsfound + 1 ))
@@ -386,4 +482,9 @@ check_dns   || exit 1
 check_conn  || exit 1
 
 exit 0
+
+
+# Set our locale environment, just in case ethtool gets translated
+LC_ALL=C
+export LC_ALL
 

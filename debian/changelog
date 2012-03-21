@@ -1,3 +1,35 @@
+debian-goodies (0.27) unstable; urgency=medium
+
+  [ Fixes I would like to see in etch, even though we're on freeze now ]
+  * Fix checkrestart with patch provided by Justin Pryzby, modify to reduce
+    false positives by not complaining about deleted inodes/files under
+    /tmp/, /var/log/ or named /SYSV. This fixes the long-standing issue that
+    made this script rather useless (related to lsof, see bug #297029, and to
+    changes in dpkg)  (Closes: #264985)
+    (Note I have included the code from Sam Morris, available at
+    http://robots.org.uk/src/psdel and contributed in the BTS. But it still
+    needs to be massaged to work as a replacement for lsof)
+  * Write a manpage for checkrestart so administrators are aware that this  
+    tool should not be completely relied on.
+  * Update the version of network-test which fixes some of the bugs already
+    fixed in the experimental 'ifupdown-extra' package:
+    [ Note: Post-etch network-test will be removed from this package but
+      I rather not try to introduce an experimental package such as
+      ifupdown-extra into etch right now ]
+      * Make network-test use bash (Closed: #401363)
+      * Do not analyse resolv.conf lines that have been commented out.
+      * Change network-test so it does not complain loudly if ethtool is not
+        installed (just recommends its installation)
+      * Fix duplicate spaces in the script as well as some typos with patch
+        provided by Norbert Kiesel (Closed: #400463)
+      * Change behaviour of network-test when testing ethernet link 
+        (based on ifupdown-extra's 'check-network-cable' tests) this is better
+        (and more reliable) than just using 'ifconfig' but requires users
+        install additional software.
+   * Lintian error fix: FSF address
+
+ -- Javier Fernandez-Sanguino Pen~a <jfs@computer.org>  Tue, 19 Dec 2006 01:59:13 +0100
+
 debian-goodies (0.26) unstable; urgency=low
 
   * Remove extra space from which-pkg-broke which introduced a syntax

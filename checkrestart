@@ -1,27 +1,73 @@
 #!/usr/bin/python
 
+# Copyright (C) 2001 Matt Zimmerman <mdz@debian.org>
+# 
+# Further updated by Javier Fernandez-Sanguino <jfs@debian.org>
+# - included patch from Justin Pryzby <justinpryzby_AT_users.sourceforge.net>
+#   to work with the latest Lsof - modify to reduce false positives by not
+#   complaining about deleted inodes/files under /tmp/, /var/log/ or named
+#   /SYSV. 
+
+# PENDING:
+# - included code from 'psdel' contributed by Sam Morris <sam_AT_robots.org.uk> to
+#   make the program work even if lsof is not installed
+#   (available at http://robots.org.uk/src/psdel)
+# 
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2, or (at your option)
+# any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+# MA 02110-1301 USA
+#
+# On Debian systems, a copy of the GNU General Public License may be
+# found in /usr/share/common-licenses/GPL.
+
 import sys
-import os
+import os, errno
 import re
+import stat
+import pwd
+import sys
+import string
 
 if os.getuid() != 0:
     sys.stderr.write('This program must be run as root\n')
     sys.stderr.write('in order to collect information about all open file descriptors\n')
     sys.exit(1)
 
+
+def find_cmd(cmd):
+     dirs = [ '/', '/usr/', '/usr/local/', sys.prefix ]
+     for d in dirs:
+         for sd in ('bin', 'sbin'):
+             location = os.path.join(d, sd, cmd)
+             if os.path.exists(location):
+                 return location
+     return 0
+
+
 def main():
     process = None
-    processes = {}
-    for line in os.popen('lsof +L1 -F n').readlines():
-        field, data = line[0], line[1:-1]
+    toRestart = {}
 
-        if field == 'p':
-            process = processes.setdefault(data,Process(int(data)))
-        elif field == 'n':
-            process.files.append(data)
+    toRestart = lsofcheck()
+    # Check if we have lsof, if not, use psdel
+#    if find_cmd('lsof'):
+#         toRestart = lsofcheck()
+#    else:
+# TODO - This does not work yet:
+#        toRestart = psdelcheck()
 
-    toRestart = filter(lambda process: process.needsRestart(),
-                       processes.values())
     print "Found %d processes using old versions of upgraded files" % len(toRestart)
 
     if len(toRestart) == 0:
@@ -97,10 +143,116 @@ def main():
         for process in package.processes:
             print "\t%s\t%s" % (process.pid,process.program)
 
+def lsofcheck():
+    processes = {}
+
+    for line in os.popen('lsof +XL -F nf').readlines():
+        field, data = line[0], line[1:-1]
+
+        if field == 'p':
+            process = processes.setdefault(data,Process(int(data)))
+        elif field == 'k':
+            process.links.append(data)
+        elif field == 'n':
+            # Remove the previous entry to check if this is something we should do
+            if data.startswith('/SYSV'):
+                last = process.descriptors.pop()
+                if not re.compile("DEL").search(last):
+                    process.files.append(data)
+            else:
+                process.files.append(data)
+        elif field == 'f':
+            process.descriptors.append(data)
+
+    toRestart = filter(lambda process: process.needsRestart(),
+                       processes.values())
+    return toRestart
+
+def psdelcheck():
+# TODO - Needs to be fixed to work here
+# Useful for seeing which processes need to be restarted after you upgrade
+# programs or shared libraries. Written to replace checkrestart(1) from the
+# debian-goodies, which often misses out processes due to bugs in lsof; see
+# <http://bugs.debian.org/264985> for more information.
+
+    numeric = re.compile(r'\d+')
+    toRestart = map (delmaps, map (string.atoi, filter (numeric.match, os.listdir('/proc'))))
+    return toRestart
+
+def delmaps (pid):
+    processes = {}
+    process = processes.setdefault(pid,Process(int(pid)))
+    deleted = re.compile(r'(.*) \(deleted\)$')
+    boring = re.compile(r'/(dev/zero|SYSV([\da-f]{8}))')
+
+    mapline = re.compile(r'^[\da-f]{8}-[\da-f]{8} [r-][w-][x-][sp-] '
+            r'[\da-f]{8} [\da-f]{2}:[\da-f]{2} (\d+) *(.+)( \(deleted\))?\n$')
+    maps = open('/proc/%d/maps' % (pid))
+    for line in maps.readlines ():
+        m = mapline.match (line)
+        if (m):
+            inode = string.atoi (m.group (1))
+            file = m.group (2)
+            if inode == 0:
+                continue
+            # remove ' (deleted)' suffix
+            if deleted.match (file):
+                file = file [0:-10]
+            if boring.match (file):
+                continue
+            # list file names whose inode numbers do not match their on-disk
+            # values; or files that do not exist at all
+            try:
+                if os.stat (file)[stat.ST_INO] != inode:
+                    process = processes.setdefault(pid,Process(int(pid)))
+            except OSError, (e, strerror):
+                if e == errno.ENOENT:
+                    process = processes.setdefault(pid,Process(int(pid)))
+                else:
+                    sys.stderr.write ('checkrestart (psdel): %s %s: %s\n' % (SysProcess.get(pid).info (), file, os.strerror (e)))
+        else:
+            print 'checkrestart (psdel): Error parsing "%s"' % (line [0:-1]) 
+    maps.close ()
+
+    return process
+
+
+class SysProcess:
+	re_name = re.compile('Name:\t(.*)$')
+	re_uids = re.compile('Uid:\t(\d+)\t(\d+)\t(\d+)\t(\d+)$')
+	processes = {}
+	def get (pid):
+		try:
+			return Process.processes [pid]
+		except KeyError:
+			Process.processes [pid] = Process (pid)
+			return Process.get (pid)
+
+	# private
+	def __init__ (self, pid):
+		self.pid = pid
+
+		status = open ('/proc/%d/status' % (self.pid))
+		for line in status.readlines ():
+			m = self.re_name.match (line)
+			if m:
+				self.name = m.group (1)
+				continue
+			m = self.re_uids.match (line)
+			if m:
+				self.user = pwd.getpwuid (string.atoi (m.group (1)))[0]
+				continue
+		status.close ()
+	
+	def info (self):
+		return '%d %s %s' % (self.pid, self.name, self.user)
+
 class Process:
     def __init__(self, pid):
         self.pid = pid
         self.files = []
+        self.descriptors = []
+        self.links = []
 
         try:
             self.program = self.cleanFile(os.readlink('/proc/%d/exe' % self.pid))
@@ -115,10 +267,31 @@ class Process:
             f = f[:null]
         return re.sub('( \(deleted\)|.dpkg-new).*$','',f)
 
+    # Check if a process needs to be restarted, previously we would
+    # just check if it used libraries named '.dpkg-new' since that's
+    # what dpkg would do. Now we need to be more contrieved.
     def needsRestart(self):
         for f in self.files:
-            if f.endswith('.dpkg-new'):
-                return 1
+            #print "Checking %s" % f
+            # We don't care about log files
+            if f.startswith('/var/log/'):
+	    	continue
+            # Or about files under /tmp
+            if f.startswith('/tmp/'):
+	    	continue
+            # TODO: it should only care about library files (i.e. /lib, /usr/lib and the like)
+            # build that check with a regexp to exclude others
+            if f.endswith(' (deleted)'):
+	    	return 1
+	    if re.compile("\(path inode=[0-9]+\)$").search(f):
+	    	return 1
+	for f in self.descriptors:
+            # If it begins with SYSV it is not a deleted file
+            if re.compile("DEL").search(f):
+	    	return 1
+	for f in self.links:
+	    if f == 0:
+	    	return 1
         return 0
 
 class Package:
@@ -129,3 +302,4 @@ class Package:
 
 if __name__ == '__main__':
     main()
+
