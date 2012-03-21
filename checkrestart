@@ -39,6 +39,7 @@ import stat
 import pwd
 import sys
 import string
+import subprocess
 
 if os.getuid() != 0:
     sys.stderr.write('This program must be run as root\n')
@@ -81,10 +82,10 @@ def main():
     print "(%d distinct programs)" % len(programs)
 
     packages = {}
-    #dpkgQuery = 'dpkg-query --search ' + ' '.join(programs.keys())
     diverted = None
-    dpkgQuery = 'dpkg --search ' + ' '.join(programs.keys())
-    for line in os.popen(dpkgQuery).readlines():
+    dpkgQuery = ["dpkg", "--search"] + programs.keys()
+    dpkgProc = subprocess.Popen(dpkgQuery, stdout=subprocess.PIPE)
+    for line in dpkgProc.stdout.readlines():
         if line.startswith('local diversion'):
             continue
         
