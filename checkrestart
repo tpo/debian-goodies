@@ -5,13 +5,15 @@
 # Further updated by Javier Fernandez-Sanguino <jfs@debian.org>
 # - included patch from Justin Pryzby <justinpryzby_AT_users.sourceforge.net>
 #   to work with the latest Lsof - modify to reduce false positives by not
-#   complaining about deleted inodes/files under /tmp/, /var/log/ or named
-#   /SYSV. 
+#   complaining about deleted inodes/files under /tmp/, /var/log/,
+#   /var/run or named   /SYSV. 
 
 # PENDING:
 # - included code from 'psdel' contributed by Sam Morris <sam_AT_robots.org.uk> to
 #   make the program work even if lsof is not installed
 #   (available at http://robots.org.uk/src/psdel)
+# - make it work with a whitelist of directories instead of a blacklist
+#   (might make it less false positive prone)
 # 
 #
 # This program is free software; you can redistribute it and/or modify
@@ -300,6 +302,9 @@ class Process:
         for f in self.files:
             # We don't care about log files
             if f.startswith('/var/log/'):
+	    	continue
+            # Or about files under temporary locations
+            if f.startswith('/var/run/'):
 	    	continue
             # Or about files under /tmp
             if f.startswith('/tmp/'):
