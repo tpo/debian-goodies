@@ -16,11 +16,14 @@ usage = '''Usage: popbugs [{-o|--output=} {outputfile|-}] [popularity-contest lo
 
 popconfile = '/var/log/popularity-contest'
 bugurl = 'http://bugs.debian.org/release-critical/other/all.html'
+# For testing purposes:
+#bugurl = 'file:///tmp/all.html'
 outputfile = None
 
+debug = 0
 try:
-    opts, args = getopt.getopt(sys.argv[1:], "ho:",
-                               ["help","output="])
+    opts, args = getopt.getopt(sys.argv[1:], "dho:",
+                               ["debug", "help","output="])
 except getopt.GetoptError:
     sys.stderr.write(usage)
     sys.exit(2)
@@ -30,12 +33,14 @@ for o, a in opts:
         sys.exit()
     elif o in ("-o", "--output"):
         outputfile = a
+    elif o in ("-d", "--debug"):
+        debug = 1 
 
 if len(args) >= 1:
     popconfile = args[0]
     if not os.path.exists(popconfile):
 	    sys.stderr.write('''
-I cannot file the popularity-contest data you pointed me to.
+I cannot find the popularity-contest data you pointed me to.
 This program requires the data collected from popularity-contest
 in order to work.
 
@@ -94,7 +99,9 @@ for line in popcon.readlines():
     (atime, ctime, package, pathname) = fields
 #    if pathname == '<NOFILES>' or pathname == '<RECENT-CTIME>':
 #        continue
-    
+
+    if debug:
+        print "POPCON: Adding package " + package 
     packages[package] = Package(package,atime)
     pkglist.append(packages[package])
     
@@ -104,11 +111,11 @@ page = urllib2.urlopen(bugurl).readlines()
 
 while page:
     line = page.pop(0)
-    output.write(line)
-    if line.startswith('<pre>'):
+    if line.startswith('<div'):
         break
+    output.write(line)
 
-packagere = re.compile('^<a name="([^"]+)"><strong>Package:.*')
+packagere = re.compile('.*<a name="([^"]+)"><strong>Package:.*')
 while page:
     m = packagere.match(page[0])
     if m:
@@ -122,11 +129,15 @@ while page:
                 break
 
         pkgname = m.group(1)
+        if debug:
+           print "REGEX: Parsing package " + pkgname 
 
         if pkgname in packages:
+            if debug:
+                print "REGEX: Package " + pkgname + "is in packages"
             packages[pkgname].html = html
     else:
-        if page[0].startswith('</pre>'):
+        if page[0].startswith('<hr>'):
             break
         page.pop(0)
 

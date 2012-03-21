@@ -1,14 +1,14 @@
 Source: debian-goodies
 Section: utils
 Priority: optional
-Maintainer: Javier Fernandez-Sanguino Pen~a <jfs@computer.org>
+Maintainer: Javier Fernandez-Sanguino Pen~a <jfs@debian.org>
 Build-Depends-Indep: debhelper (>> 3.0.0)
 Standards-Version: 3.5.2
 
 Package: debian-goodies
 Architecture: all
 Depends: dctrl-tools | grep-dctrl, curl, python (>= 2.3), lsof
-Suggests: popularity-contest
+Suggests: popularity-contest, netcat
 Conflicts: debget
 Replaces: debget
 Description: Small toolbox-style utilities for Debian systems

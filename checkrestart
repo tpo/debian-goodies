@@ -105,6 +105,8 @@ def main():
     print "(%d distinct packages)" % len(packages)
 
     if len(packages) == 0:
+        print "No packages seem to need to be restarted."
+        print "(please read checkrestart(1))"
         sys.exit(0)
 
     for package in packages.values():
@@ -131,13 +133,23 @@ def main():
             
     print
     print "Of these, %d seem to contain init scripts which can be used to restart them:" % len(restartable)
+    # TODO - consider putting this in a --verbose option
+    print "Of these, the following seem to contain init scripts which can be used to restart them:"
+    for package in restartable:
+        print package.name + ':'
+        for process in package.processes:
+            print "\t%s\t%s" % (process.pid,process.program)
+                    
+    print
+    print "These are the init scripts:"
     print '\n'.join(restartCommands)
     print
 
     if len(nonrestartable) == 0:
         sys.exit(0)
 
-    print "Here are the others:"
+    # TODO - consider putting this in a --verbose option
+    print "Here are the others that do not seem to contain an init script for restarting them::"
     for package in nonrestartable:
         print package.name + ':'
         for process in package.processes:

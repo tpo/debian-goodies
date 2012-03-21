@@ -1,3 +1,28 @@
+debian-goodies (0.29) unstable; urgency=low
+
+  * Network-test: use -t switch to use user's TMPDIR or /tmp instead of
+    trying to create it under $PWD (Closes: #432311)
+  * Add a Suggests: netcat (Closes: #400479)
+  * popbugs: 
+      * Make it parse the new format of the RC buglist properly (Closes: #421355)
+      * Add a debug option
+      * Fix a typo in the output
+  * Change maintainer's email address in debian/control
+
+ -- Javier Fernandez-Sanguino Pen~a <jfs@debian.org>  Mon, 09 Jul 2007 18:23:53 +0200
+
+debian-goodies (0.28) unstable; urgency=low
+
+  * Apply patch by Francesco Potorti that makes checkrestart list 
+    processes that should be restarted when a daemon is restarted.
+    This helps warn users that some processes will not be restarted
+    even though they use the init script (such as active ssh connections). And
+    need to be restarted manually (Closes: #290265)
+  * Be more verbose when nothing needs to be done (the user might think that
+    the script did not do anything!)
+
+ -- Javier Fernandez-Sanguino Pen~a <jfs@computer.org>  Tue, 19 Dec 2006 11:24:57 +0100
+
 debian-goodies (0.27) unstable; urgency=medium
 
   [ Fixes I would like to see in etch, even though we're on freeze now ]
@@ -10,7 +35,7 @@ debian-goodies (0.27) unstable; urgency=medium
     http://robots.org.uk/src/psdel and contributed in the BTS. But it still
     needs to be massaged to work as a replacement for lsof)
   * Write a manpage for checkrestart so administrators are aware that this  
-    tool should not be completely relied on.
+    tool should not be completely relied on. (Closes: #305279)
   * Update the version of network-test which fixes some of the bugs already
     fixed in the experimental 'ifupdown-extra' package:
     [ Note: Post-etch network-test will be removed from this package but
