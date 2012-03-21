@@ -11,6 +11,7 @@ debian-goodies (0.60) unstable; urgency=low
      - Show time info for all installed "Multi-Arch: same" packages
        (Closes: #658846)
      - No more swallows all exceptions (Closes: #654458)
+     - Correctly handle alternative dependencies (Closes: #516904)
 
  --
 
