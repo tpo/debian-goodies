@@ -1,3 +1,9 @@
+debian-goodies (0.43) unstable; urgency=low
+
+  * Fix typo in checkrestart's call to dpkg (Closes: #490179)
+
+ -- Javier Fernandez-Sanguino Pen~a <jfs@debian.org>  Fri, 11 Jul 2008 17:22:50 +0200
+
 debian-goodies (0.42) unstable; urgency=low
 
   * Updated to version 1.3 of debmany provided by Michael Arlt:

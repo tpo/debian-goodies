@@ -147,7 +147,7 @@ def main():
     for package in packages.values():
         if package == 'util-linux':
             continue
-        dpkgQuery = ["dpkg", "--listfiles ", + package.name]
+        dpkgQuery = ["dpkg", "--listfiles ", package.name]
         dpkgProc = subprocess.Popen(dpkgQuery, stdout=subprocess.PIPE, stderr=None)
         for line in dpkgProc.stdout.readlines():
             path = line[:-1]
