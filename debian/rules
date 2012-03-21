@@ -59,6 +59,7 @@ binary-indep: build install
 		debmany/man/debmany.1 debmany/man/debmany.de.1
 #	dh_undocumented
 	dh_installchangelogs 
+	dh_installexamples
 	dh_link
 	dh_compress
 	dh_fixperms
