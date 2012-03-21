@@ -55,7 +55,7 @@ def pkginstalltime(pkg):
         listfile = '/var/lib/dpkg/info/' + pkg + ':' + arch + '.list'
         try:
             times.append([pkg + ':' + arch, os.stat(listfile)[ST_MTIME]])
-        except:
+        except OSError:
             pass
         arch = dpkg_archs.stdout.readline().rstrip()
     dpkg_archs.wait()
@@ -64,7 +64,7 @@ def pkginstalltime(pkg):
         listfile = '/var/lib/dpkg/info/' + pkg + '.list'
         try:
             times.append([pkg, os.stat(listfile)[ST_MTIME]])
-        except:
+        except OSError:
             print "Package", pkg, "has no install time info"
 
     return times
