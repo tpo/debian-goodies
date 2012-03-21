@@ -1,3 +1,10 @@
+debian-goodies (0.38) unstable; urgency=low
+
+  * Fix bug in network-test which prevent it from working properly
+    when no verbose level was set.
+
+ -- Javier Fernandez-Sanguino Pen~a <jfs@debian.org>  Sun, 14 Oct 2007 23:19:07 +0200
+
 debian-goodies (0.37) unstable; urgency=low
 
   * checkrestart:

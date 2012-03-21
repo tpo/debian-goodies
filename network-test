@@ -69,6 +69,9 @@
 # - Use arpping to detect another host with our same IP address
 # - Check other TODOs inline in the code
 
+# Defaults
+VERB=3
+LOG=0
 while getopts ":hsv:" Option
 do
     case $Option in
@@ -108,17 +111,17 @@ export PATH LC_ALL
 # error reporting and logging functions
 info () {
     [ "$VERB" -gt 2 ] && echo "INFO: $1"
-    [ "$VERB" -gt 2 ] && [ "$LOG" ] && logger -p local3.info "$0 INFO: $1"
+    [ "$VERB" -gt 2 ] && [ "$LOG" -eq 1 ] && logger -p local3.info "$0 INFO: $1"
 }
 
 warn () {
     [ "$VERB" -gt 1 ] && echo "WARN: $1"
-    [ "$VERB" -gt 1 ] && [ "$LOG" ] && logger -p local3.warn "$0 WARN: $1"
+    [ "$VERB" -gt 1 ] && [ "$LOG" -eq 1 ] && logger -p local3.warn "$0 WARN: $1"
 }
 
 err () {
     [ "$VERB" -gt 0 ] && echo "ERR: $1" >&2
-    [ "$VERB" -gt 0 ] && [ "$LOG" ] && logger -p local3.err "$0 ERR: $1"
+    [ "$VERB" -gt 0 ] && [ "$LOG" -eq 1 ] && logger -p local3.err "$0 ERR: $1"
 }
 
 
