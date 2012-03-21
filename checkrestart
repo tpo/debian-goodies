@@ -62,8 +62,13 @@ def usage():
     sys.stderr.write('usage: checkrestart [-vhpa]\n')
 
 def main():
+    global lc_all_c_env
     process = None
     toRestart = {}
+
+    lc_all_c_env = os.environ
+    lc_all_c_env['LC_ALL'] = 'C'
+
 
 # Process options
     try:
@@ -132,9 +137,6 @@ def main():
             print "Process %s (PID: %d) "  % (process.program, process.pid)
             process.listDeleted()
 
-    lc_all_c_env = os.environ
-    lc_all_c_env['LC_ALL'] = 'C'
-
     packages = {}
     diverted = None
     dpkgQuery = ["dpkg-query", "--search"] + programs.keys()
@@ -174,7 +176,8 @@ def main():
         if package == 'util-linux':
             continue
         dpkgQuery = ["dpkg-query", "--listfiles", package.name]
-        dpkgProc = subprocess.Popen(dpkgQuery, stdout=subprocess.PIPE, stderr=None)
+        dpkgProc = subprocess.Popen(dpkgQuery, stdout=subprocess.PIPE, stderr=None,
+                                env = lc_all_c_env)
         for line in dpkgProc.stdout.readlines():
             path = line[:-1]
             if path.startswith('/etc/init.d/'):
@@ -260,6 +263,9 @@ def lsofcheck():
 #  - 0 (NO) for known locations of files which might be deleted
 #  - 1 (YES) for valid deleted files we are interested in
 def isdeletedFile (f):
+
+    global lc_all_c_env
+
     if allFiles:
         return 1
     # We don't care about log files
@@ -307,8 +313,14 @@ def isdeletedFile (f):
         return 0
     # Skip, if asked to, files that do not belong to any package
     if onlyPackageFiles:
-        dpkgQuery = ["dpkg-query", "--search", f]
-        dpkgProc = subprocess.Popen(dpkgQuery, stdout=subprocess.PIPE, stderr=None)
+        file_in_package = False
+        # Remove some lsof information from the file to ensure that it is
+        # a proper filename
+        file_name = re.sub(r'\(.*\)','', f)
+        file_name = re.sub(r'\s+$','', file_name)
+        dpkgQuery = ["dpkg-query", "--search", file_name]
+        dpkgProc = subprocess.Popen(dpkgQuery, stdout=subprocess.PIPE, stderr=None,
+                                env = lc_all_c_env)
         for line in dpkgProc.stdout.readlines():
             if line.endswith(f):
                  file_in_package = True

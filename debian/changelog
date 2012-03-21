@@ -1,3 +1,12 @@
+debian-goodies (0.59) unstable; urgency=low
+
+  * [checkrestart]: 
+    - Properly define variables to prevent Python errors when using the 
+      -p switch (Closes: #646513)
+    - Pass a default environment for all subprocess calls
+
+ -- Javier Fernandez-Sanguino Pen~a <jfs@debian.org>  Tue, 25 Oct 2011 00:19:02 +0200
+
 debian-goodies (0.58) unstable; urgency=low
 
   * [dglob] 
