@@ -274,8 +274,11 @@ def isdeletedFile (f):
     # Or about files under /dev/shm
     if f.startswith('/dev/shm/'):
         return 0
+    # Or about files under /run
+    if f.startswith('/run/'):
+        return 0
     # Or about files under /drm
-    if f.startswith('/drm'):
+    if f.startswith('/drm/'):
         return 0
     # Or about files under /var/tmp
     if f.startswith('/var/tmp/'):

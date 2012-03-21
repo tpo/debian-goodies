@@ -1,3 +1,13 @@
+debian-goodies (0.57) unstable; urgency=low
+
+  * [checkrestart]: 
+     - Exclude /run/ from the deleted files check, this prevents 
+       false positives from some programs such as newer releases of
+       jackd2 and chromium which use /run/shm/ instead of
+       /dev/shm/ (Closes: #595096)
+
+ -- Javier Fernandez-Sanguino Pen~a <jfs@debian.org>  Mon, 10 Oct 2011 23:05:30 +0200
+
 debian-goodies (0.56) unstable; urgency=low
 
   * [checkrestart]: 
@@ -8,7 +18,7 @@ debian-goodies (0.56) unstable; urgency=low
        not belong to any package, thanks to Peter Eisentraut for the
        patch. (Closes: #608387)
      - Fix handling of --verbose option (Closes: #623168)
-     - Exclude /dev/shm from the deleted files check, this prevents 
+     - Exclude /dev/shm/ from the deleted files check, this prevents 
        a false positive from some programs such as jackd2 (Closes: #595096)
      - Exclude /home from the deleted files check as these
        generate a number of false positives. This included: GNOME's mixer
