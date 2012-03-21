@@ -43,12 +43,31 @@ def alldeps(pkg, ignore):
     return dlist
 
 def pkginstalltime(pkg):
-    listfile = '/var/lib/dpkg/info/' + pkg + '.list'
-    try:
-        return os.stat(listfile)[ST_MTIME]
-    except:
-        print "Package", pkg, "has no install time info"
-        return None
+    dpkg_archs = subprocess.Popen(
+        ['dpkg-architecture', '-L'],
+        stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+        env={} # force POSIX locale
+    )
+
+    arch = dpkg_archs.stdout.readline().rstrip()
+    times = []
+    while(arch != ''):
+        listfile = '/var/lib/dpkg/info/' + pkg + ':' + arch + '.list'
+        try:
+            times.append([pkg + ':' + arch, os.stat(listfile)[ST_MTIME]])
+        except:
+            pass
+        arch = dpkg_archs.stdout.readline().rstrip()
+    dpkg_archs.wait()
+
+    if not times:
+        listfile = '/var/lib/dpkg/info/' + pkg + '.list'
+        try:
+            times.append([pkg, os.stat(listfile)[ST_MTIME]])
+        except:
+            print "Package", pkg, "has no install time info"
+
+    return times
 
 def what_broke(pname):
     def sortfun(a, b):
@@ -59,7 +78,7 @@ def what_broke(pname):
 
     itimes = []
     for p in pkgs:
-        itimes.append([p, pkginstalltime(p)])
+        itimes.extend(pkginstalltime(p))
     itimes.sort(sortfun)
     for i in itimes:
         p, t = i

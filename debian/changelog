@@ -4,6 +4,8 @@ debian-goodies (0.60) unstable; urgency=low
   * Bump Standards-Version to 3.9.3 (no changes)
   * [dhomepage] Handle multiple available packages and multiple homepage
     URLs (Closes: #664868)
+  * [which-pkg-broke] Show time info for all installed "Multi-Arch: same"
+    packages (Closes: #658846)
 
  --
 
