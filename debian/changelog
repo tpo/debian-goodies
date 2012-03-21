@@ -1,9 +1,18 @@
+debian-goodies (0.35) unstable; urgency=low
+
+  * Make it Depend on python => 2.4 as the subprocess module used by
+    checkrestart is not available in 2.3
+  * Add CVE name to previous changelog entry
+  * Minor typo fix in debian/control
+
+ -- Javier Fernandez-Sanguino Pen~a <jfs@debian.org>  Tue, 04 Sep 2007 23:28:58 +0200
+
 debian-goodies (0.34) unstable; urgency=high
 
   * Fix security bug that enables users to generate files in the
     filesystem with shell metacharacters and have the checkrestart
     script run external code (as root, since the script will only
-    run as admin) (Closes: 440411)
+    run as admin). This is CVE-2007-3912. (Closes: 440411)
 
  -- Javier Fernandez-Sanguino Pen~a <jfs@debian.org>  Sun, 02 Sep 2007 23:07:30 +0200
 
