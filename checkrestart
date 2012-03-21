@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 # Copyright (C) 2001 Matt Zimmerman <mdz@debian.org>
-# Copyright (C) 2007,2010 Javier Fernandez-Sanguino <jfs@debian.org>
+# Copyright (C) 2007,2011 Javier Fernandez-Sanguino <jfs@debian.org>
 # - included patch from Justin Pryzby <justinpryzby_AT_users.sourceforge.net>
 #   to work with the latest Lsof - modify to reduce false positives by not
 #   complaining about deleted inodes/files under /tmp/, /var/log/,
@@ -83,7 +83,7 @@ def main():
     allFiles = False
 
     for o, a in opts:
-        if o == "-v":
+        if o in ("-v", "--verbose"):
             verbose = True
         elif o in ("-h", "--help"):
             usage()
@@ -180,15 +180,13 @@ def main():
             if path.startswith('/etc/init.d/'):
                 if path.endswith('.sh'):
                     continue
-                package.initscripts.append(path)
+                package.initscripts.add(path)
         # Alternatively, find init.d scripts that match the process name
         if len(package.initscripts) == 0:
             for process in package.processes:
                 path = '/etc/init.d/' + os.path.basename(process.program)
                 if os.path.exists(path):
-                    package.initscripts.append(path)
-            # Remove duplicate inits
-            package.initscripts = [ u for u in package.initscripts if u not in locals()['_[1]'] ]
+                    package.initscripts.add(path)
 
     restartable = []
     nonrestartable = []
@@ -273,6 +271,9 @@ def isdeletedFile (f):
     # Or about files under /tmp
     if f.startswith('/tmp/'):
         return 0
+    # Or about files under /dev/shm
+    if f.startswith('/dev/shm/'):
+        return 0
     # Or about files under /drm
     if f.startswith('/drm'):
         return 0
@@ -288,11 +289,18 @@ def isdeletedFile (f):
     # Or /usr/lib/locale
     if f.startswith('/usr/lib/locale/'):
         return 0
+    # Skip files from the user's home directories
+    # many processes hold temporafy files there 
+    if f.startswith('/home/'):
+        return 0
     # Skip automatically generated files
     if f.endswith('icon-theme.cache'):
         return 0
     # Skip font files
     if f.startswith('/var/cache/fontconfig/'):
+        return 0
+    # Skip Nagios Spool
+    if f.startswith('/var/lib/nagios3/spool/'):
         return 0
     # Skip, if asked to, files that do not belong to any package
     if onlyPackageFiles:
@@ -300,7 +308,10 @@ def isdeletedFile (f):
         dpkgProc = subprocess.Popen(dpkgQuery, stdout=subprocess.PIPE, stderr=None)
         for line in dpkgProc.stdout.readlines():
             if line.endswith(f):
-                return 0
+                 file_in_package = True
+                 break
+        if not file_in_package:
+                 return 0
 
     # TODO: it should only care about library files (i.e. /lib, /usr/lib and the like)
     # build that check with a regexp to exclude others
@@ -452,7 +463,8 @@ class Process:
 class Package:
     def __init__(self, name):
         self.name = name
-        self.initscripts = []
+        # use a set, we don't need duplicates
+        self.initscripts = set()
         self.processes = []
 
 if __name__ == '__main__':

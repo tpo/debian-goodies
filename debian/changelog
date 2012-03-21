@@ -1,3 +1,28 @@
+debian-goodies (0.56) unstable; urgency=low
+
+  * [checkrestart]: 
+     - Use patch provided by Jörg Sommer and Piotr Kaczuba that makes the
+       script use a set for the initscripts information, thus making the
+       program work with Python 2.7 (Closes: #64397)
+     - Fix behaviour of -p so that it does not consider files that do
+       not belong to any package, thanks to Peter Eisentraut for the
+       patch. (Closes: #608387)
+     - Fix handling of --verbose option (Closes: #623168)
+     - Exclude /dev/shm from the deleted files check, this prevents 
+       a false positive from some programs such as jackd2 (Closes: #595096)
+     - Exclude /home from the deleted files check as these
+       generate a number of false positives. This included: GNOME's mixer
+       applet, dovecot, nautilus, chromium-broswer and evolution-data-server
+       (Closes: #595096, #609454)
+  * [checkrestart.1]: 
+     - Update the manpage to indicate what information to provide when
+       reporting a false positive in checkrestart
+  * /debmany/man/debmany.1:
+     - Fix typo in manpage (Closes: #600252)
+ 
+
+ -- Javier Fernandez-Sanguino Pen~a <jfs@debian.org>  Sun, 09 Oct 2011 20:51:11 +0200
+
 debian-goodies (0.55) unstable; urgency=low
 
   * [ dglob ] Clean up bashims (Closes: #600156)
