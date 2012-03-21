@@ -8,7 +8,7 @@ Standards-Version: 3.5.2
 Package: debian-goodies
 Architecture: all
 Depends: dctrl-tools | grep-dctrl, curl, python (>= 2.4), lsof, whiptail | dialog
-Suggests: popularity-contest, netcat, xdg-utils
+Suggests: popularity-contest, xdg-utils
 Conflicts: debget
 Replaces: debget
 Description: Small toolbox-style utilities for Debian systems

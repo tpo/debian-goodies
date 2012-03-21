@@ -1,3 +1,11 @@
+debian-goodies (0.39) unstable; urgency=low
+
+  * Remove the network-test script, which now has been moved to the
+    ifupdown-extra package. Also remove the dependencies introduced by 
+    that script.
+
+ -- Javier Fernandez-Sanguino Pen~a <jfs@debian.org>  Tue, 18 Dec 2007 21:37:18 +0100
+
 debian-goodies (0.38) unstable; urgency=low
 
   * Fix bug in network-test which prevent it from working properly
