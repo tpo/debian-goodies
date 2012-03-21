@@ -4,8 +4,8 @@ Priority: optional
 Maintainer: Javier Fernandez-Sanguino Pen~a <jfs@debian.org>
 Uploaders: Axel Beckert <abe@debian.org>
 Build-Depends: debhelper (>= 5)
-Vcs-Svn: svn://svn.debian.org/collab-maint/deb-maint/debian-goodies/trunk/
-Vcs-Browser: http://svn.debian.org/viewsvn/collab-maint/deb-maint/debian-goodies/trunk/
+Vcs-Git: git://anonscm.debian.org/collab-maint/debian-goodies.git
+Vcs-Browser: http://anonscm.debian.org/gitweb/?p=collab-maint/debian-goodies.git
 Standards-Version: 3.9.1
 
 Package: debian-goodies

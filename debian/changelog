@@ -1,3 +1,9 @@
+debian-goodies (0.60) unstable; urgency=low
+
+  * Change Vcs-* headers to new git repository (Closes: #623379)
+
+ --
+
 debian-goodies (0.59) unstable; urgency=low
 
   * [checkrestart]: 
