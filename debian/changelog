@@ -1,3 +1,10 @@
+debian-goodies (0.31) unstable; urgency=low
+
+  * Introduce the debmany script written by Michael Arlt  (it was actually in
+    the sources of 0.30 but not installed in the binary package)
+
+ -- Javier Fernandez-Sanguino Pen~a <jfs@debian.org>  Mon, 27 Aug 2007 19:05:46 +0200
+
 debian-goodies (0.30) unstable; urgency=low
 
   * checkrestart changes:

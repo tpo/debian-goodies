@@ -43,6 +43,8 @@ install: build
 	for grepname in dzgrep degrep dfgrep; do \
 		ln -s dgrep $(CURDIR)/debian/debian-goodies/usr/bin/$$grepname; \
 	done
+	install -m 755 debmany/debmany \
+		$(CURDIR)/debian/debian-goodies/usr/sbin
 
 # Build architecture-dependent files here.
 # We have nothing to do by default.
@@ -52,26 +54,16 @@ binary-arch: build install
 binary-indep: build install
 	dh_testdir
 	dh_testroot
-#	dh_installdebconf	
 	dh_installdocs README
-#	dh_installexamples
-#	dh_installmenu
-#	dh_installlogrotate
-#	dh_installemacsen
-#	dh_installpam
-#	dh_installmime
-#	dh_installinit
-#	dh_installcron
 	dh_installman debget.1 debman.1 dglob.1 dgrep.1 dpigs.1 popbugs.1 \
-		which-pkg-broke.1 network-test.1 checkrestart.1
-#	dh_installinfo
+		which-pkg-broke.1 network-test.1 checkrestart.1 \
+		debmany/man/debmany.1 debmany/man/debmany.de.1
 #	dh_undocumented
 	dh_installchangelogs 
 	dh_link
 	dh_compress
 	dh_fixperms
 	dh_installdeb
-#	dh_perl
 	dh_gencontrol
 	dh_md5sums
 	dh_builddeb

@@ -1,4 +1,4 @@
-#!/bin/bassh
+#!/bin/bash
 # script:      debmany
 # author:      Michael Arlt
 # description: select the manpages of any [not] installed debian package
@@ -12,7 +12,6 @@ LC_ALL=C
 
 # choose the manpageviewer
 mancmdline="man %s" # default manpageviewer
-test -n "$DEBMANY_MANPAGE_VIEWER" && mancmdline="$DEBMANY_MANPAGE_VIEWER" # override default manpageviewer
 
 curdir=`pwd`
 
@@ -25,27 +24,28 @@ error()
 
 usage()
 {
-  self="${0##*/}"
-  echo "debmany 1.1 Sun Aug 19 20:11:48 CEST 2007
+  echo "debmany 1.2 Sat Aug 25 22:38:17 CEST 2007
 Description: Display a manpage from a Debian package.
              The list of manpages is displayed in a dialog.
              Supported locations for debian packages are: Local .deb-file,
              a package in the repository or a installed package.
-Syntax  : $self [-?|-h|--help] [-m manpageviewer|-k|-g|-x] package|package.deb
-
-Examples: $self foo.deb  show manpages from a local package file foo.deb
-          $self foo      show manpages from a package, if the package is
-                         not installed it is retrieved from the
-                         configured repositories.
-          $self -k foo   show manpages using your preferred man-viewer 
-                         (KDE users)
-          $self -g foo   show manpages using your preferred man-viewer 
-                         (GNOME users)
-          $self -x foo   show manpages using your preferred man-viewer 
-                         using xdg-open (Xfce users)
-          $self -m 'konqueror man:%s' foo 
-                         show manpages using konqueror as man-viewer
-          export DEBMANY_MANPAGE_VIEWER='konqueror man:%s'; $self sc"
+Syntax1 : debmany [-?|-h|--help]
+Syntax2 : debmany [-m viewer|-k|-g|-x] [-L limit] [-l lang1[,...]] package[.deb]
+Examples: debmany foo.deb  show manpages from a local package file foo.deb
+          debmany foo      show manpages from a package, if the package is
+                           not installed it is retrieved from the
+                           configured repositories.
+          debmany -k foo   show manpages using your preferred man-viewer (KDE)
+          debmany -g foo   show manpages using your preferred man-viewer (GNOME)
+          debmany -x foo   show manpages using your preferred man-viewer
+                           using xdg-open from xdg-utils package (Xfce users)
+          debmany -m 'konqueror man:%s' -l de,fr -L 5M foo
+                           show english, german and french manpages using
+                           konqueror as man-viewer and ask if download size
+                           exceeds 5M
+          alias debmany='debmany -l de -L 5M -k'; debmany -m man -l "*" foo
+                           set an alias with your preferred options and
+                           overwrite them if needed"
   if [ $# -eq 0 ]
   then
     exit 0
@@ -54,27 +54,32 @@ Examples: $self foo.deb  show manpages from a local package file foo.deb
   fi
 }
 
-case "$1" in
+while [ $# -gt 0 ]
+do
+  case $1 in
   "-?"|-h|--help) usage ;;
-  -m) shift
-      # override default manpageviewer or environment variable DEBMANY_MAN_VIEWER
+  -m) # override default manpageviewer or environment variable DEBMANY_MAN_VIEWER
+      shift
       mancmd=($1)			# get first word from manpageviewer
       if which $mancmd >/dev/null 2>&1	# is the manpageviewer executeable?
       then
-        mancmdline="$1"
-        shift
+        echo $1 | grep -q "%s" && mancmdline="$1" || mancmdline="$1 %s"
       else
         usage "Manpageviewer '$mancmd' is not available or executable"
       fi
   ;;
-  -k) shift; mancmdline='kfmclient exec man:%s';;	# set kde viewer
-  -g) shift; mancmdline='gnome-open man:%s';;		# set gnome viewer
-  -x) shift; mancmdline='xdg-open man:%s';;		# set independant viewer
-  -*) usage "Unknown option $1"
-  ;;
-esac
+  -k) mancmdline='kfmclient exec man:%s';;	# set kde viewer
+  -g) mancmdline='gnome-open man:%s';;		# set gnome viewer
+  -x) mancmdline='xdg-open man:%s';;		# set independant viewer
+  -l) shift; lang=$1;;				# remember language
+  -L) shift; asksize=$1;;			# remember asksize
+  -*) usage "Unknown option '$1'.";;
+  *)  package="$1";;
+  esac
+  shift
+done
 
-test $# -ne 1 && usage "You must specify one package or a Debian package file"
+test -z "$package" && usage "You must specify one package or a Debian package file."
 
 # determine the size of your terminal
 declare -i size=(`stty size`)
@@ -101,34 +106,44 @@ x=x-1			# width of the dialog
 y=y-1			# height of the dialog
 declare -i h=y-7	# height of the menu
 
-if [ "${1##*.}" = "deb" ] 
+if [ "${package##*.}" = "deb" ] 
 then
   # mode1: you want to see manpages from a .deb-file
-  if [ -r "$1" ] ; then
-      file=`readlink -f "$1"`
-      status=file
+  if [ -r "$package" ]
+  then
+    file=`readlink -f "$package"`
+    status=file
   else
-      error "The file $1 cannot be read"
+    error "The file $package cannot be read."
   fi
 else
   # mode 2: test if you have the package already installed
-  for man in `dpkg -L "$1" 2>/dev/null | grep -e /usr/share/man -e /usr/X11R6/man|sort`
-  do
-    # mode 2: add the manpages to the list
-    test -f $man && manpages="$manpages $man ${man##*/}"
-  done
+  if dpkg -l "$package" 2>/dev/null | grep -q ^i
+  then
+    status=installed
+    set -f
+    # modify lang for grep regular expressions: fr -> fr\.* (-> fr+fr.ISO8859-1+"fr."...)
+    langgrep=`echo $lang|sed -e s/*/.*/g -e 's/\([a-zA-Z_][a-zA-Z_]*\)/\1,\1\\\\\\.*/'`
+    # create the list of all mandirs (with -e for grep) (X11R6 is only for sarge - didn't find it in etch anymore)
+    mandirs="`eval echo \\"-e \\"/usr/\{share,X11R6\}/man/man.*/ \\"-e \\"/usr/\{share,X11R6\}/man/\{$langgrep,XYZZXY\}/`"
+    for man in `dpkg -L "$package" 2>/dev/null|grep $mandirs|sort`
+    do
+      # mode 2: add the manpages to the list
+      test -f $man && manpages="$manpages $man ${man##*/}"
+    done
+    set +f
+  fi
 fi
 
-# TODO: If there is a locally installed package with no manpages
-# it will try to download a new version. This could be considered
-# a bug or a feature (as there are slim chances of this to 
-# provide any new manpages). Maybe it should just abort if the
-# packaged is installed but there are no manpages to see.
-if [ -n "$manpages" ]
+# choose whiptail or dialog
+whiptail=/usr/bin/whiptail
+dialog=/usr/bin/dialog
+test -x $whiptail && cmd=$whiptail || cmd=$dialog
+
+if [ "$status" = "installed" ]
 then
   # mode 2
   cd /
-  status=installed
 else
   # mode 1 and 3
   trap 'test -n "$temp" && rm -rf $temp; exit' 0 2 15 # cleanup
@@ -142,10 +157,10 @@ else
   if [ -z "$file" ]
   then
     # mode 3: find the package.deb
-    aptdata=`apt-get -q2 --print-uris --reinstall install "$1" 2>/dev/null | tail -1`
+    aptdata=`apt-get -q2 --print-uris --reinstall install "$package" 2>/dev/null | tail -1`
     if [ -z "$aptdata" ]
     then
-      error "There is no package called '$1'."
+      error "There is no package called '$package'."
       exit 1
     fi
 
@@ -164,30 +179,75 @@ else
     else
       # mode 3: download the local file
       file="$temp/tmp.deb"
+      # if i should ask at a specific size
+      if [ "$asksize" != "" ]
+      then
+        # determine the size of the file to download (*10 for 10,5M)
+        declare -i size=`apt-cache show "$package"|grep ^"Size: "|cut -f2 -d" "|head -1`*10
+        # determine the value of ask_size
+        templimit=`echo ${asksize//[^0-9]/}`
+	test "$templimit" = "" && error "Parameter -L needs an argument - e.g. '10M'."
+        declare -i limit=`echo ${asksize//[^0-9]/}`*10
+        # determine the unit of ask_size
+        unit=`echo ${asksize//[0-9]/}`
+        # calculate the limit according to unit from DEBMANY_ASK_SIZE
+        case $unit in
+          B|"") ;;
+          K) limit=limit*1024;;
+          M) limit=limit*1024*1024;;
+          G) limit=limit*1024*1024*1024;;
+          T) limit=limit*1024*1024*1024*1024;;
+          *) error "Invalid unit '$unit' in variable DEBMANY_ASK_SIZE."
+        esac
+        # calculate the human readable size and ask for download if size exceeds limit
+        if [ $size -ge $limit ]
+        then
+          unit=B
+          # reduce the size and correct the unit until it is human readable
+          while [ $size -gt 1024 ]
+          do
+            size=size/1024
+            case $unit in
+              G) unit=T;;
+              M) unit=G;;
+              K) unit=M;;
+              B) unit=K;;
+            esac
+          done
+          # set the comma (so if the file has a size of 50M we change 500 to 50,0M
+          commasize=`echo $size|sed "s/\([0-9]*\)\([0-9]\)/\1,\2/"`$unit
+          # ask if the download may start - otherwise debmany exits
+          if ! $cmd --yesno "Would you like to download the package with a size of $commasize?" 9 40
+          then
+            echo "Download undesired - $commasize is too big."
+            exit
+          fi
+        fi
+      fi
       curl "$url" >"$file" || error "Could not download '$file' from the repository."
       status=repos-curl
     fi
   fi
   cd $temp
   # extract the manpages
-  MANDIRS='usr/share/man usr/X11R6/man ./usr/share/man ./usr/X11R6/man'
-  dpkg --fsys-tarfile "$file" | tar -xf - $MANDIRS 2>/dev/null
+  set -f
+  # modify lang for pathname expansion: fr -> fr.* (-> fr+fr.ISO8859-1+"fr."...)
+  lang=`echo $lang|sed -e 's/\([a-zA-Z_][a-zA-Z_]*\)/\1,\1*/'`
+  # create the list of all mandirs (X11R6 is only for sarge - didn't find it in etch anymore)
+  mandirs="`eval echo \{./,\}usr/\{share,X11R6\}/man/man*/ \{./,\}usr/\{share,X11R6\}/man/\{$lang,XYZZXY\}/`"
+  dpkg --fsys-tarfile "$file" | tar --wildcards -xf - $mandirs 2>/dev/null
+  set +f
   manpages=`find usr -type f|sort|sed -e 's§\([^/]*\)$§\1 \1§'`
 fi
-
-# choose whiptail or dialog
-whiptail=/usr/bin/whiptail
-dialog=/usr/bin/dialog
-test -x $whiptail && cmd=$whiptail || cmd=$dialog
 
 while true
 do
   # test if manpages where found
-  test -z "$manpages" && error "No manpage exists for package '$1'."
+  test -z "$manpages" && error "No manpage exists for package '$package'."
 
   # select your manpages using dialog
   exec 3>&1
-  return=`$cmd --title "Select a manpage ($status:$1)" --menu '' $y $x $h $manpages 2>&1 1>&3`
+  return=`$cmd --title "Select a manpage ($status:$package)" --menu '' $y $x $h $manpages 2>&1 1>&3`
   exec 3>&-
   if [ -n "$return" ]
   then

@@ -9,29 +9,39 @@ _debmany()
   cur=${COMP_WORDS[COMP_CWORD]}
   prev=${COMP_WORDS[COMP_CWORD-1]}
 
-  if [[ "$prev" == -m ]]; then
-    case "${cur:0:1}" in
-      \"|\') local manpageviewer="${cur:1}";;
-      *) local manpageviewer="$cur";;
-    esac
-    COMP_WORDS=(COMP_WORDS[0] $manpageviewer)
-    COMP_CWORD=1
-    _command
-    # not perfect: '-m "konquer<tab' gets completed to '-m "konqueror"'
-    # and          '-m konquer<tab'  gets completed to '-m konqueror'
-    # both shall complete to '-m "konqueror man:%s"' ?!
-    # but [ ${#COMPREPLY[@]} -eq 1 ] && [ ${COMPREPLY:0:1} != '"' ] && COMPREPLY[0]='"'$COMPREPLY' man:%s"'
-    # completes to debmany -m \"konqueror\ man\:%s\"
-    # my knowledge is too low concerning completion
-    # whole -m section should be rewritten by someone with knowledge
-  else
-    if [[ "$cur" == -* ]]; then
-      COMPREPLY=( $( compgen -W '-? -h --help -k -g -x -m' -- $cur ) )
-    else
-      COMPREPLY=( $( apt-cache pkgnames $cur 2> /dev/null; ) )
-      [ ${#COMPREPLY[@]} -eq 0 ] && _filedir deb
-    fi
-  fi
+  case "$prev" in
+    -L) if [[ "$cur" != "" && "${cur//[0-9]/}" == "" ]]
+        then
+          COMPREPLY=( K M G T )
+        fi
+        # not perfect - 10M<tab> and the cursor sticks on the M but should paste a " "
+        return;;
+    -l) COMPREPLY=( $( ls /usr/share/man 2>/dev/null | cut -f1 -d'.' | grep -v ^man | sort -u ) );;
+    -m)
+      case "${cur:0:1}" in
+        \"|\') local manpageviewer="${cur:1}";;
+        *) local manpageviewer="$cur";;
+      esac
+      COMP_WORDS=(COMP_WORDS[0] $manpageviewer)
+      COMP_CWORD=1
+      _command
+      # not perfect: '-m "konquer<tab' gets completed to '-m "konqueror"'
+      # and          '-m konquer<tab'  gets completed to '-m konqueror'
+      # both shall complete to '-m "konqueror man:%s"' ?!
+      # but [ ${#COMPREPLY[@]} -eq 1 ] && [ ${COMPREPLY:0:1} != '"' ] && COMPREPLY[0]='"'$COMPREPLY' man:%s"'
+      # completes to debmany -m \"konqueror\ man\:%s\"
+      # my knowledge is too low concerning completion
+      # whole -m section should be rewritten by someone with knowledge
+      ;;
+    *)
+      if [[ "$cur" == -* ]]; then
+        COMPREPLY=( $( compgen -W '-? -h --help -m -k -g -x -L -l' -- $cur ) )
+      else
+        COMPREPLY=( $( apt-cache pkgnames $cur 2> /dev/null; ) )
+        [ ${#COMPREPLY[@]} -eq 0 ] && _filedir deb
+      fi
+      ;;
+  esac
 
   return 0
 } &&

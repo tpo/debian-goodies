@@ -1,7 +1,7 @@
 copy bash_completion to ~/.bash_completion
 it uses functions from /etc/bash_completion
 completion is done for
-  parameters (-m is not handled very good),
+  parameters (-m is not handled very good and -l could be improved, too),
   packages,
   filenames ending with .deb and
   folders
