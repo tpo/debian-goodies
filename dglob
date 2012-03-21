@@ -35,12 +35,14 @@ while true; do
         -0) SEP=0 ; shift ;;
         -r|-e|-i|-X|-v) grep_dctrl_options="$grep_dctrl_options $1"; shift ;;
         -f) expand="xargs dpkg --listfiles | perl -nl${SEP}e 'print if -f'"
-            if [ "$all" == "yes" ] ; then
+            if [ "$all" = "yes" ] ; then
                 if [ -n "`which apt-file`" ]   ; then
 # if we have apt-file use it instead
                     expand="while read pack; do apt-file show \$pack; done | perl -ple 's/^.*?: //'"
                 else
-                    echo -e "WARN: You requested information on files of all packages,\nWARN: however, since the 'apt-file' package is not available, this\nWARN: information can only be provided for those packages currently installed." >&2
+                    echo "WARN: You requested information on files of all packages," >&2
+                    echo "WARN: however, since the 'apt-file' package is not available, this" >&2
+                    echo "WARN: information can only be provided for those packages currently installed." >&2
                 fi
             fi
             shift
@@ -51,7 +53,7 @@ while true; do
 done
 
 # Does the package exist?
-if [ "$all" == "no" ] ; then
+if [ "$all" = "no" ] ; then
     packages=`eval $filter /var/lib/dpkg/status | grep-dctrl -PnsPackage $grep_dctrl_options "$1"`
     if [ -z "$packages" ] ; then
     	exit 1
