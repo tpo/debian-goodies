@@ -1,3 +1,11 @@
+debian-goodies (0.44) unstable; urgency=low
+
+  * checkrestart:
+   * Remove extra space in call to dpkg (Closes: #490399)
+   * Prevent warnings when using mutt (it creates deleted files)
+
+ -- Javier Fernandez-Sanguino Pen~a <jfs@debian.org>  Sat, 12 Jul 2008 14:19:51 +0200
+
 debian-goodies (0.43) unstable; urgency=low
 
   * Fix typo in checkrestart's call to dpkg (Closes: #490179)
