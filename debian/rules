@@ -36,7 +36,7 @@ install: build
 	install -d $(CURDIR)/debian/debian-goodies/usr/bin
 	install -d $(CURDIR)/debian/debian-goodies/usr/sbin
 	install -m 755 dgrep dglob debget dpigs debman popbugs which-pkg-broke \
-		$(CURDIR)/debian/debian-goodies/usr/bin
+		dhomepage $(CURDIR)/debian/debian-goodies/usr/bin
 	install -m 755 checkrestart \
 		$(CURDIR)/debian/debian-goodies/usr/sbin
 	for grepname in dzgrep degrep dfgrep; do \
@@ -55,7 +55,7 @@ binary-indep: build install
 	dh_testroot
 	dh_installdocs README
 	dh_installman debget.1 debman.1 dglob.1 dgrep.1 dpigs.1 popbugs.1 \
-		which-pkg-broke.1 checkrestart.1 \
+		which-pkg-broke.1 checkrestart.1 dhomepage.1 \
 		debmany/man/debmany.1 debmany/man/debmany.de.1
 #	dh_undocumented
 	dh_installchangelogs 

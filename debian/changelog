@@ -1,3 +1,11 @@
+debian-goodies (0.50) unstable; urgency=low
+
+  * Use patch provided by Thadeu Lima de Souza Cascardo to:
+    - Remove bashisms from dhomepage, thanks to Raphael Geissert.
+    - Really install dhomepage.
+
+ -- Javier Fernandez-Sanguino Pen~a <jfs@debian.org>  Sun, 01 Mar 2009 23:49:01 +0100
+
 debian-goodies (0.49) unstable; urgency=low
 
   * Sat which-pkg-broke's in a couch and fixed his problems with its own

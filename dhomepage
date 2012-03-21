@@ -19,14 +19,14 @@
 
 VERSION="0.1"
 
-function version()
+version()
 {
   echo "dhomepage version $VERSION"
   echo "dhomepage is licensed under the GNU General Public License"
   echo "version 2 or later"
 }
 
-function usage()
+usage()
 {
   echo "dhomepage PACKAGE"
   echo ""
