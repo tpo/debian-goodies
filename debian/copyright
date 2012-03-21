@@ -8,7 +8,36 @@ Upstream Authors: Matt Zimmerman <mdz@debian.org>
 
 Copyright:
 
-# Copyright (C) 2001 Matt Zimmerman <mdz@debian.org>
+The programs in this package hold the following copyrights: 
+
+ - checkrestart:
+  Copyright (C) 2001 Matt Zimmerman <mdz@debian.org>
+  Copyright (C) 2007,2008 Javier Fernandez-Sanguino <jfs@debian.org>
+
+ - debget, dgrep, dglob, dpigs, popbugs
+
+ Copyright (C) 2001-2004 Matt Zimmerman <mdz@debian.org>
+
+ - debman
+  Copyright (C) 2003 Colin Watson <cjwatson@debian.org>
+
+ - which-pkg-broke
+
+ Written by  Bill Gribble <grib@billgribble.com> and placed in the public
+ domain.
+
+ - dhomepage
+
+ Copyright (C) 2008  Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+
+ - debian/ contents
+
+  Copyright (C) 2001-2004 Matt Zimmerman <mdz@debian.org>
+  Copyright (C) 2006-2009 Javier Fernandez-Sanguino <jfs@debian.org>
+
+
+The license of all programs in this package, excluding 'which-pkg-broke' which
+is in the public domain, is:
 
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -24,6 +53,7 @@ Copyright:
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
 # MA 02110-1301 USA
+
 
 On Debian systems, a copy of the GNU General Public License may be
 found in /usr/share/common-licenses/GPL.

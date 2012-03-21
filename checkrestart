@@ -60,7 +60,7 @@ def find_cmd(cmd):
      return 0
 
 def usage():
-    sys.stderr.write('usage: checkrestart [-v]\n')
+    sys.stderr.write('usage: checkrestart [-vhpa]\n')
 
 def main():
     process = None
@@ -68,19 +68,32 @@ def main():
 
 # Process options
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hv", ["help", "verbose"])
+        opts, args = getopt.getopt(sys.argv[1:], "hvpa", ["help", "verbose", "packages", "all"])
     except getopt.GetoptError, err:
         # print help information and exit:
-        print str(err) # will print something like "option -a not recognized"
+        print str(err) # will print something like "option -x not recognized"
         usage()
         sys.exit(2)
+
+    # Global variables set through the command line
+    global verbose, onlyPackageFiles, allFiles
     verbose = False
+    # Only look for deleted files that belong to packages
+    onlyPackageFiles = False
+    # Look for any deleted file
+    allFiles = False
+
     for o, a in opts:
         if o == "-v":
             verbose = True
         elif o in ("-h", "--help"):
             usage()
             sys.exit()
+        elif o in ("-p", "--packages"):
+            onlyPackageFiles = True
+        elif o in ("-a", "--all"):
+            allFiles = True
+            onlyPackageFiles = False
         else:
             assert False, "unhandled option"
 
@@ -233,9 +246,11 @@ def lsofcheck():
 
 # Tells if a file has to be considered a deleted file
 # Returns:
-#  - 0 (NO) for known locations of files which might be delted
+#  - 0 (NO) for known locations of files which might be deleted
 #  - 1 (YES) for valid deleted files we are interested in
 def isdeletedFile (f):
+    if allFiles:
+        return 1
     # We don't care about log files
     if f.startswith('/var/log/'):
         return 0
@@ -260,6 +275,17 @@ def isdeletedFile (f):
     # Skip mutt files
     if re.compile("/tmp/mutt-\w+-[\-0-9]").search(f):
         return 0
+    # Skip font files
+    if f.startswith('/var/cache/fontconfig/'):
+        return 0
+    # Skip, if asked to, files that do not belong to any package
+    if onlyPackageFiles:
+        dpkgQuery = ["dpkg", "--search", f]
+        dpkgProc = subprocess.Popen(dpkgQuery, stdout=subprocess.PIPE, stderr=None)
+        for line in dpkgProc.stdout.readlines():
+            if line.endswith(f):
+                return 0
+
     # TODO: it should only care about library files (i.e. /lib, /usr/lib and the like)
     # build that check with a regexp to exclude others
     if f.endswith(' (deleted)'):

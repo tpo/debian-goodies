@@ -1,5 +1,25 @@
 #!/bin/sh
 
+# dpigs - Show which installed packages occupy the most space
+
+# Copyright (C) 2001,2002 Matt Zimmerman <mdz@debian.org>
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2, or (at your option)
+# any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
+# 02111-1307, USA.
+#
+
 set -e
 
 # set locale for sorting
@@ -21,8 +41,10 @@ Usage() {
 LINES=10
 # grep-status provides a default
 STATUS=
+# Default: provide binary package information
+SOURCE=0
 
-OPTS=$(getopt -o n:s:h --long lines:,status:,help -- "$@")
+OPTS=$(getopt -o n:s:Sh --long lines:,status:,source,help -- "$@")
 eval set -- "$OPTS"
 
 while true; do
@@ -34,6 +56,10 @@ while true; do
         -s|--status)
             STATUS="$2"
             shift 2
+            ;;
+        -S|--source)
+            SOURCE=1
+            shift 1
             ;;
         -h|--help)
             Usage
@@ -50,7 +76,25 @@ while true; do
     esac
 done
 
-grep-status -nsInstalled-size,Package -F Status ' installed' $STATUS \
-| perl -p00l12 -e 's/\n/ /' \
-| sort -rn \
-| head --lines=$LINES
+if [ $SOURCE -eq 0 ] ; then
+    grep-status -nsInstalled-size,Package -F Status ' installed' $STATUS \
+        | perl -p00l12 -e 's/\n/ /' \
+        | sort -rn \
+        | head --lines=$LINES
+else
+# Order by source package
+    grep-status -nsInstalled-size,Source:Package -F Status ' installed' $STATUS \
+        | perl -n00a -e '$s{$F[1]}+=$F[0]; END { for(keys %s) {print"$s{$_} $_\n"} }' \
+        | sort -rn \
+        | head --lines=$LINES
+# Alternatively use this:
+# It adds details of which binary packages are
+# involved (but not how big they are), with % standing in for the source
+#grep-status -nsInstalled-size,Package,Source:Package -F Status ' installed' \
+#    $STATUS \
+#    | perl -n00al12 -e '$s{$F[2]} += $F[0];
+#        $F[1] =~ s/\Q$F[2]\E/%/; $b{$F[2]}{$F[1]} = 1;
+#            END {$, = " "; for(keys %s) {print "$s{$_} $_:", sort keys %{$b{$_}}} }' \
+#            | sort -rn \
+#            | head --lines=$LINES
+fi

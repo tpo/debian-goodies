@@ -62,6 +62,9 @@ binary-indep: build install
 	dh_installexamples
 	dh_link
 	dh_compress
+	ln -s dgrep.1.gz debian/debian-goodies/usr/share/man/man1/degrep.1.gz
+	ln -s dgrep.1.gz debian/debian-goodies/usr/share/man/man1/dfgrep.1.gz
+	ln -s dgrep.1.gz debian/debian-goodies/usr/share/man/man1/dzgrep.1.gz
 	dh_fixperms
 	dh_installdeb
 	dh_gencontrol

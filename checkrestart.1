@@ -6,7 +6,7 @@
 .SH NAME
 checkrestart \- check which processes need to be restarted after an upgrade
 .SH SYNOPSIS
-.B checkrestart [ -hv ]
+.B checkrestart [ -hvpa ]
 .SH DESCRIPTION
 The
 .B checkrestart
@@ -40,6 +40,22 @@ Show the program help and exit.
 Generate detailed output. This output includes the list of all
 processes found using deleted files or descriptors as well as the deleted files
 and descriptors found.
+
+.TP
+.BI -p, --package
+Only process deleted files that belong to a package, ignoring deleted files
+which do not have an associated package in the package system.
+
+.TP
+.BI -a, --all
+Process all deleted files regardless of location. This makes 
+the program analyse deleted files even if they would be discarded
+because they are located in locations, such as 
+.I /tmp
+, which are known to produce false positives. It will take preceded if used
+simultaneously with the 
+.I -p
+option.
 
 .SH EXIT STATUS
 

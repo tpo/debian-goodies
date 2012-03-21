@@ -1,9 +1,24 @@
 #!/usr/bin/python
 
+# popbugs - Find RC bugs in packages you commonly use
+# Copyright (C) 2001-2004 Matt Zimmerman <mdz@debian.org>
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2, or (at your option)
+# any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
+# 02111-1307, USA.
 #
-#      popbugs - Find RC bugs in packages you commonly use
-#      Matt Zimmerman <mdz@debian.org> 2001
-#
+
 
 import sys
 import re
@@ -60,8 +75,10 @@ in order to work.
         sys.stderr.write('''
 There is no popularity-contest data present on your system.  This
 probably means that popularity-contest has not yet run since it
-was installed.  Try running /etc/cron.weekly/popularity-contest by
-hand to collect some data.
+was installed.  Try waiting for /etc/cron.daily/popularity-contest to
+to collect some data or manually run (as root user):
+
+    /usr/sbin/popularity-contest >/var/log/popularity-contest
 
 ''')
         sys.exit(1)

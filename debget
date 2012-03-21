@@ -1,5 +1,26 @@
 #!/bin/sh -e
 
+# debget - Fetch a .deb for a package in APT's database
+
+# Copyright (C) 2001,2002 Matt Zimmerman <mdz@debian.org>
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2, or (at your option)
+# any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
+# 02111-1307, USA.
+#
+
+
 # Set the locale so we can control apt-get errors properly
 LC_ALL=C
 
@@ -25,11 +46,18 @@ if [ $? -ne 0 ] ; then
 	echo "ERROR: There was an error calling apt-get. Check that the database is in a consistent state and try again"
 	exit 1
 fi
+if ! ls /var/lib/apt/lists/ |grep Release >/dev/null; then
+    echo "ERROR: Your apt lists are empty. Update your package database"
+    echo "using 'apt-get update'"
+fi
+
 
 for pkgspec in $*; do
    apt-get -q2 --print-uris --reinstall install "$pkgspec" 2>/dev/null >/dev/null
    if [ $? -ne 0 ] ; then
 	echo "ERROR: There is no '$pkgspec' package. Sorry."
+        echo "If you believe the package exists then consider updating your."
+        echo "package database using 'apt-get update'"
 	continue
    fi
   # This provides only one version, but it's better than the apt-get

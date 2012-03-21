@@ -1,3 +1,36 @@
+debian-goodies (0.48) unstable; urgency=low
+
+  * Provide dhomepage application (and manual page) that can be used
+    to open a packages' homepage. This program was provided by 
+    Thadeu Lima de Souza Cascardo (Closes: 500397)
+  * Document degrep, dfgrep and dzgrep through the dgrep manpage by creating a
+    symlink during package installation, thanks to Xavier Luthi for the
+    patch. (Closes: 403845, 403844, 403843)
+  * Add a proper (C) and license header to debget and dpigs
+  * checkrestart:
+       - skip deleted files in /var/cache/fontconfig/
+       - add a 'a' ('all') command line switch to process all deleted
+         files, regardless of location
+       - add a 'p' ('package') command line switch to process only
+         files which are associated with a given package
+       - adjust command line options in usage()
+    (Closes: 497611)
+  * dpigs: Use script snipet provided by Aaron M. Ucko to make it possible
+    to group by source package, use a new (-S, --source) option. 
+    (Closes: 511349)
+  * debget: 
+       - check the contents of /var/lib/apt/lists before executing
+         apt to warn if there is no Release information there
+       - document that APT's package database needs to be up-to-dat if a
+         package is not found (might happen to aptitude users)
+  * popbugs: adjust error message: 
+        - popularity contest is now run through cron.daily
+        - provide the command line needed to generate the popconf data
+     (Closes: 500432)
+
+
+ -- Javier Fernandez-Sanguino Pen~a <jfs@debian.org>  Sun, 25 Jan 2009 20:59:06 +0100
+
 debian-goodies (0.47) unstable; urgency=low
 
   * debget: use 'head' instead of 'tail' when using apt-get --print-uris to
