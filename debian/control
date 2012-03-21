@@ -2,12 +2,15 @@ Source: debian-goodies
 Section: utils
 Priority: optional
 Maintainer: Javier Fernandez-Sanguino Pen~a <jfs@debian.org>
-Build-Depends-Indep: debhelper (>> 3.0.0)
-Standards-Version: 3.5.2
+Uploaders: Axel Beckert <abe@debian.org>
+Build-Depends: debhelper (>= 5)
+Vcs-Svn: svn://svn.debian.org/collab-maint/deb-maint/debian-goodies/trunk/
+Vcs-Browser: http://svn.debian.org/viewsvn/collab-maint/deb-maint/debian-goodies/trunk/
+Standards-Version: 3.9.1
 
 Package: debian-goodies
 Architecture: all
-Depends: dctrl-tools | grep-dctrl, debianutils, curl, python (>= 2.4), lsof, whiptail | dialog, less
+Depends: dctrl-tools | grep-dctrl, perl, curl, python (>= 2.4), lsof, whiptail | dialog, less, ${misc:Depends}
 Suggests: popularity-contest, xdg-utils, zenity
 Conflicts: debget
 Replaces: debget
@@ -21,11 +24,12 @@ Description: Small toolbox-style utilities for Debian systems
  These are also included, because they are useful and don't justify
  their own packages:
  .
-  debget       - Fetch a .deb for a package in APT's database
-  dpigs        - Show which installed packages occupy the most space
-  debman       - Easily view man pages from a binary .deb without extracting
-  debmany      - Select manpages of installed or uninstalled packages
-  checkrestart - Help to find and restart processes which are using old
-                 versions of upgraded files (such as libraries)
-  popbugs      - Display a customized release-critical bug list based on
-                 packages you use (using popularity-contest data)
+  debget          - Fetch a .deb for a package in APT's database
+  dpigs           - Show which installed packages occupy the most space
+  debman          - Easily view man pages from a binary .deb without extracting
+  debmany         - Select manpages of installed or uninstalled packages
+  checkrestart    - Help to find and restart processes which are using old
+                    versions of upgraded files (such as libraries)
+  popbugs         - Display a customized release-critical bug list based on
+                    packages you use (using popularity-contest data)
+  which-pkg-broke - find which package might have broken another

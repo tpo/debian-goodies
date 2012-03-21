@@ -1,3 +1,49 @@
+debian-goodies (0.53) unstable; urgency=low
+
+  * [checkrestart] Fix numerical use of errno. Thanks Jakub Wilk! See
+    http://lists.debian.org/debian-hurd/2010/08/msg00006.html for details.
+  * [checkrestart] Fix Python string exception. Thanks Jakub Wilk for the
+    patch. (Closes: #585198)
+  * [dpigs] Fix getopt configuration for -h. Thanks Jakub Wilk for
+    spotting this. (Closes: #584580)
+  * Bump Standards-Version to 3.9.1 (no changes)
+  
+ -- Axel Beckert <abe@debian.org>  Wed, 04 Aug 2010 12:35:05 +0200
+
+debian-goodies (0.52) unstable; urgency=low
+
+  * Added myself as Uploader.
+  * Added Vcs-* header to debian/control
+  * Switch to source format "3.0 (native)"
+  * debget now downloads the correct package if apt-get would download
+    multiple packages due to missing dependencies. Thanks Jakub Wilk for
+    the patch! (Closes: #536377, #522491)
+  * dpigs: New option -H which outputs human-readable packages sizes
+    similar to "ls -lh" or "du -h" (Closes: #307910)
+  * Updated dpigs documentation to match current command line options.
+  * Fixed deprecation warning in which-pkg-broke with Python 2.6 by using
+    the subprocess instead of popen2 module. Thanks Jakub Wilk for the
+    patch! (Closes: #582924)
+  * Added which-pkg-broke to the package's long description (Closes: #563279)
+  * Bumped standards version to 3.8.4 (no changes other than those
+    mentioned elsewhere in the changelog entry)
+  * Bumped debhelper compatibility to 5 and fixed the following related
+    lintian warnings:
+    + package-uses-deprecated-debhelper-compat-version
+    + package-lacks-versioned-build-depends-on-debhelper
+    + debian-rules-sets-DH_COMPAT
+  * Add dependency on perl (used by dpigs)
+  * Removed dependency without version on essential package
+    debianutils. Fixes lintian error
+    depends-on-essential-package-without-using-version.
+  * Fixed the following lintian errors and warnings:
+    + [debian/control] debhelper-but-no-misc-depends
+    + [debian/control] clean-should-be-satisfied-by-build-depends
+    + [checkrestart.1] spelling-error-in-manpage
+  * Fixed typo in dglob(1) man page (Closes: #535477)
+
+ -- Axel Beckert <abe@debian.org>  Sat, 29 May 2010 19:13:09 +0200
+
 debian-goodies (0.51) unstable; urgency=low
 
   * Include patch from Jiri Palecek that makes checkrestart work

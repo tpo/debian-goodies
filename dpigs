@@ -34,6 +34,11 @@ Usage() {
     echo "    Display the N largest packages on the system (default 10)."
     echo "  -s, --status=status-file"
     echo "    Use status-file instead of the default dpkg status file."
+    echo "  -S, --source"
+    echo "    Display the largest source packages of binary packages installed"
+    echo "    on the system."
+    echo "  -H, --human-readable"
+    echo "    Display package sizes in human-readable format (like ls -lh or du -h)"
     echo "  -h, --help"
     echo "    Display this message."
 }
@@ -43,8 +48,10 @@ LINES=10
 STATUS=
 # Default: provide binary package information
 SOURCE=0
+# Default: display kilobytes
+HUMAN=0
 
-OPTS=$(getopt -o n:s:Sh --long lines:,status:,source,help -- "$@")
+OPTS=$(getopt -o n:s:ShH --long lines:,status:,source,help,human-readable -- "$@")
 eval set -- "$OPTS"
 
 while true; do
@@ -59,6 +66,10 @@ while true; do
             ;;
         -S|--source)
             SOURCE=1
+            shift 1
+            ;;
+        -H|--human-readable)
+            HUMAN=1
             shift 1
             ;;
         -h|--help)
@@ -97,4 +108,15 @@ else
 #            END {$, = " "; for(keys %s) {print "$s{$_} $_:", sort keys %{$b{$_}}} }' \
 #            | sort -rn \
 #            | head --lines=$LINES
+fi | if [ $HUMAN -eq 1 ]; then
+    awk '{ if ($1 > 1024*1024*1024)
+              printf("% 6.1fT %s\n", $1/(1024*1024*1024), $2);
+           else if ($1 > 1024*1024)
+              printf("% 6.1fG %s\n", $1/(1024*1024), $2);
+           else if ($1 > 1024)
+              printf("% 6.1fM %s\n", $1/1024, $2);
+           else
+              printf("% 6.1ik %s\n", $1, $2); }'
+else
+    cat
 fi

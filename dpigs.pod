@@ -30,6 +30,11 @@ Display the N largest packages on the system (default 10).
 Use I<FILE> instead of the default dpkg status file (which is
 F</var/lib/dpkg/status> currently).
 
+=item B<-S>, B<--source>
+
+Display the largest source packages of binary packages installed on
+the system.
+
 =back 
 
 =head1 AUTHOR

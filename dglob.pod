@@ -11,7 +11,7 @@ B<dglob> [B<-0>] B<-f> I<pattern>
 =head1 DESCRIPTION
 
 B<dglob> lists packages names matching a pattern. It can
-also list all the files they contain. By default B<dglobl> only searches
+also list all the files they contain. By default B<dglob> only searches
 installed packages; the B<-a> switch widens the search (see L<"OPTIONS">). The
 list is written to stdout, one name per line.
 

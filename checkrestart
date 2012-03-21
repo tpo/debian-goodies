@@ -145,7 +145,7 @@ def main():
                 diverted = m.group(3)
                 continue
             if not diverted:
-                raise 'Weird error while handling diversion'
+                raise Exception('Weird error while handling diversion')
             packagename, program = m.group(1), diverted
         else:
             packagename, program = line[:-1].split(': ')
@@ -393,7 +393,7 @@ class Process:
         try:
             self.program = os.readlink('/proc/%d/exe' % self.pid)
         except OSError, e:
-            if e.errno != 2:
+            if e.errno != errno.ENOENT:
                 raise
         self.program = self.cleanFile(self.program)
 

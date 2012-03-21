@@ -67,7 +67,7 @@ for pkgspec in $*; do
   	  version=`echo $version | sed -ne '$s/^.*: \(.*\).*$/\1/p'`
 	  echo "($pkgspec -> $version)"
   done
-  aptdata=$(apt-get -q2 --print-uris --reinstall install "$pkgspec" 2>/dev/null | head -1)
+  aptdata=$(apt-get -q2 --print-uris --reinstall install "$pkgspec" 2>/dev/null | grep -F "/${pkgspec}_")
   if [ -z "$aptdata" ] ; then
   	echo "ERROR: No APT data returned for '$pkgspec'. Sorry."
 	echo "This is probably because the package is in the local apt cache"

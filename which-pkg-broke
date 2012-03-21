@@ -4,22 +4,27 @@
 
 import sys
 import os
-import popen2
+import subprocess
 import time
 from string import *
 from stat import *
 
 def pkgdeps(pkg):
-    outstr, instr = popen2.popen4("LC_ALL=C apt-cache depends %s" % pkg)
+    apt_cache = subprocess.Popen(
+        ['apt-cache', 'depends', pkg],
+        stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+        env={} # force POSIX locale
+    )
     deps = []
-    myline = outstr.readline()
+    myline = apt_cache.stdout.readline()
     while(myline != ''):
         elts = map(strip, myline.split(':'))
         if len(elts) == 2:
             how, pkg = elts
             if how in ('Depends', 'PreDepends'):
                 deps.append(pkg)
-        myline = outstr.readline()
+        myline = apt_cache.stdout.readline()
+    apt_cache.wait()
     return deps
 
 def alldeps(pkg, ignore):

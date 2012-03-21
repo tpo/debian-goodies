@@ -5,17 +5,14 @@
 # Uncomment this to turn on verbose mode.
 #export DH_VERBOSE=1
 
-# This is the debhelper compatibility version to use.
-export DH_COMPAT=4
-
-
+PODDOC=debget dglob dgrep dpigs
 
 build: build-stamp
 
 build-stamp:
 	dh_testdir
 
-	for prog in debget dglob dgrep dpigs; do pod2man -c "Debian-goodies documentation" $$prog.pod > $$prog.1; done
+	for prog in $(PODDOC); do pod2man -c "Debian-goodies documentation" $$prog.pod > $$prog.1; done
 
 	touch build-stamp
 
@@ -23,6 +20,7 @@ clean:
 	dh_testdir
 	dh_testroot
 	rm -f build-stamp
+	for prog in $(PODDOC); do rm -f $$prog.1; done
 
 	dh_clean
 
