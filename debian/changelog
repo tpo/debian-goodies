@@ -1,3 +1,29 @@
+debian-goodies (0.54) unstable; urgency=low
+
+  * debian/control: Turn the lsof Depends: into Recommends for the benefit
+    of the kfreebsd architectures (i.e. to make it possible for it to be
+    installed in these as lsof is not available there). Unfortunately,
+    we cannot use a Depends based on architecture as we are Arch: all
+    (Closes: #594431)
+  * [checkrestart]: Complain if lsof is not installed (could happen since
+    it is now in Recommends) and abort as we do not currently have
+    an alternative (psdel still unfinished...)
+  * [checkrestart]: Fix false positive with Xorg in some specific Xorg
+    servers due to the use of /drm. Thanks to Tarek Soliman for the patch.
+    (Closes: 548380)
+  * [dglob, dglob.pod]: Use grep-aptavail when the user requests all packages
+    listed. Also use apt-file if available since if the package is not
+    installed then the list of files is not available in the system
+    (Closes: #594426)
+  * Include a new 'debpaste' which is borrowed from http://paste.debian.net
+    (more specifically http://ankh-morp.org/~vetinari/tools/paste-dn.pl).
+    Adjust debian/copyright accordingly to acknowledge the author and
+    its copyright. This script is not yet distributed as Recommends/Depends
+    have to be adjusted to accommodate it, and a manpage needs to be written,
+    but it will be used as a basis to coses bug #476099.
+
+ -- Javier Fernandez-Sanguino Pen~a <jfs@debian.org>  Sat, 02 Oct 2010 18:54:36 +0200
+
 debian-goodies (0.53) unstable; urgency=low
 
   * [checkrestart] Fix numerical use of errno. Thanks Jakub Wilk! See
@@ -235,7 +261,7 @@ debian-goodies (0.36) unstable; urgency=low
 
   * Exclude /var/run contents from the deleted files check which means
     that apache2, when using mod_ssl should now not be reported
-    as needing a restart (Closes: 432569)
+    as needing a restart (Closes: 432569, 482136)
 
  -- Javier Fernandez-Sanguino Pen~a <jfs@debian.org>  Thu, 06 Sep 2007 23:37:03 +0200
 

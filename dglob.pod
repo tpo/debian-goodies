@@ -15,15 +15,17 @@ also list all the files they contain. By default B<dglob> only searches
 installed packages; the B<-a> switch widens the search (see L<"OPTIONS">). The
 list is written to stdout, one name per line.
 
-grep-dctrl(1) is used to search the list of packages, so you should
-refer to its documentation for information on how patterns are
+grep-dctrl(1) and grep-aptavail(1) are used to search the list of packages, so
+you should refer to its documentation for information on how patterns are
 matched.  By default, all packages whose name contains the given
 string will be matched, but several options are available to modify
 this behavior (see L<"OPTIONS">).
 
 If you use dglob with the B<-f> option, all files in the matched packages
-are listed instead of their names. Only existing, plain (i.e. no symlinks,
-directories or other special ones) files are listed. The filenames are
+are listed instead of their names. If you do not use de B<-a> switch,
+only existing, plain (i.e. no symlinks, directories or other special ones)
+files are listed. If the B<-a> switch is use then all files will
+be listed both for installed and non-installed packages. The filenames are
 written to stdout, one file per line. You can use the B<-0> option to
 get the filenames separated by '\0' instead of a newline.
 
@@ -36,12 +38,15 @@ B<dglob> supports the following options:
 =item B<-a>
 
 Search through all available packages, not just installed ones.
+If set, grep-aptavail(1) is used.
 
 =item B<-f>
 
-List all files in the matched packages. This list only installed (i.e. 
-locally existing) files from installed packages, so using it together
-with B<-a> is rather pointless.
+List all files in the matched packages. By default, this lists only installed
+(i.e.  locally existing) files from installed packages. If used
+together with B<-a> then it will list all files both of installed and
+non-installed packages by mean of apt-file(1). If apt-file is not
+installed, using B<-f> together with B<-a> is rather pointless.
 
 =item B<-0>
 
@@ -50,8 +55,8 @@ a newline. When specified without B<-f>, this options does nothing.
 
 =item B<-r>, B<-e>, B<-i>, B<-X>, B<-v>
 
-These options are passed directly to grep-dctrl(1) to modify how the
-pattern is matched.  See grep-dctrl(1).
+These options are passed directly to grep-dctrl(1) or to grep-aptavail(1) to
+modify how the pattern is matched.  See grep-dctrl(1).
 
 =back
 
@@ -70,7 +75,8 @@ and installed packages.
 
 Matt Zimmerman <mdz@debian.org>
 
-This manpage was written by Frank Lichtenheld <frank@lichtenheld.de>.
+This manpage was written by Frank Lichtenheld <frank@lichtenheld.de>,
+and further enhanced by Javier Fernandez-Sanguino <jfs@debian.org>.
 
 =head1 COPYRIGHT AND LICENCE
 
@@ -86,4 +92,4 @@ found in /usr/share/common-licenses/GPL.
 
 =head1 SEE ALSO
 
-grep-dctrl(1), dpkg(8)
+grep-dctrl(1), grep-available(1), apt-file(1), dpkg(8)

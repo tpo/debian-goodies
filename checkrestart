@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
 # Copyright (C) 2001 Matt Zimmerman <mdz@debian.org>
-# Copyright (C) 2007,2008 Javier Fernandez-Sanguino <jfs@debian.org>
+# Copyright (C) 2007,2010 Javier Fernandez-Sanguino <jfs@debian.org>
 # - included patch from Justin Pryzby <justinpryzby_AT_users.sourceforge.net>
 #   to work with the latest Lsof - modify to reduce false positives by not
 #   complaining about deleted inodes/files under /tmp/, /var/log/,
@@ -49,7 +49,6 @@ if os.getuid() != 0:
     sys.stderr.write('about all open file descriptors in the system.\n')
     sys.exit(1)
 
-
 def find_cmd(cmd):
      dirs = [ '/', '/usr/', '/usr/local/', sys.prefix ]
      for d in dirs:
@@ -57,7 +56,7 @@ def find_cmd(cmd):
              location = os.path.join(d, sd, cmd)
              if os.path.exists(location):
                  return location
-     return 0
+     return 1
 
 def usage():
     sys.stderr.write('usage: checkrestart [-vhpa]\n')
@@ -98,13 +97,19 @@ def main():
             assert False, "unhandled option"
 
 # Start checking
-    toRestart = lsofcheck()
-    # Check if we have lsof, if not, use psdel
+
+    if find_cmd('lsof') == 1:
+        sys.stderr.write('ERROR: This program needs lsof in order to run.\n')
+        sys.stderr.write('Please install the lsof package in your system.\n')
+        sys.exit(1)
+# Check if we have lsof, if not, use psdel
 #    if find_cmd('lsof'):
 #         toRestart = lsofcheck()
 #    else:
 # TODO - This does not work yet:
 #        toRestart = psdelcheck()
+
+    toRestart = lsofcheck()
 
     print "Found %d processes using old versions of upgraded files" % len(toRestart)
 
@@ -267,6 +272,9 @@ def isdeletedFile (f):
         return 0
     # Or about files under /tmp
     if f.startswith('/tmp/'):
+        return 0
+    # Or about files under /drm
+    if f.startswith('/drm'):
         return 0
     # Or about files under /var/tmp
     if f.startswith('/var/tmp/'):
