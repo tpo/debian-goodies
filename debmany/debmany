@@ -4,7 +4,7 @@
 # description: select manpages+docs of any [not] installed debian package
 # comment:     debmany is based on the work of debman and debget
 # gui uses:    whiptail (preferred), dialog or zenity as well
-# other uses:  curl, less (can be overwritten: -o)
+# other uses:  curl, $PAGER or sensible-pager (can be overwritten: -o)
 # optional:    -k -g -x: kfmexec gnome-open xdg-open (xdg-utils)
 # This is free software.  You may redistribute copies of it under the terms of
 # the GNU General Public License <http://www.gnu.org/licenses/gpl.html>.
@@ -24,8 +24,8 @@
 LC_ALL=C
 
 # defaults
-mancmdline="man %s"     # manpageviewer
-othercmdline="less %s"  # viewer for other files
+mancmdline="man %s"               # man page viewer
+othercmdline="sensible-pager %s"  # viewer for other files
 
 curdir=`pwd`
 
@@ -53,7 +53,7 @@ Description: Display a manpage or documentation files from a Debian package.
              The list of files is displayed in a dialog.
              Supported locations for debian packages are: Local .deb-file,
              a package in the repository or an installed package.
-             The default for manpages is man - less is used for other files.
+             The default for manpages is man - sensible-pager is used for other files.
              Default can be overwritten with -k|-g|-x and -m -o.
 Syntax1 : debmany [-?|-h|--help]
 Syntax2 : debmany [-v[v]] [-k|-g|-x] [-m manviewer] [-o otherviewer] [-L limit] [-l lang1[,...]] package[.deb]
