@@ -15,6 +15,9 @@ debian-goodies (0.60) unstable; urgency=low
   * [bash_completion]
      - Install debmany bash completion file to /etc/bash_completion.d
        instead of as example. Rename it for easier use of dh_install.
+     - Add bash package name completion for which-pkg-broke (Closes:
+       #641877), dhomepage, and debget. (Based on devscript's package name
+       completion which is under GPLv2+, too)
   * Thanks Jakub Wilk for many bugfix patches!
 
  --

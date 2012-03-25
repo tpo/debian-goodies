@@ -1,1 +1,2 @@
 debmany/bash_completion/debmany etc/bash_completion.d
+bash_completion/debian-goodies.pkgnames etc/bash_completion.d

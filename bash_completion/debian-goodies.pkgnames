@@ -1,0 +1,12 @@
+_pkg_names()
+{
+    local cur prev opts
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+
+    COMPREPLY=( $( apt-cache pkgnames $cur 2> /dev/null ) )
+
+    return 0
+}
+
+complete -F _pkg_names which-pkg-broke dhomepage debget
