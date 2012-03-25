@@ -18,6 +18,8 @@ debian-goodies (0.60) unstable; urgency=low
      - Add bash package name completion for which-pkg-broke (Closes:
        #641877), dhomepage, and debget. (Based on devscript's package name
        completion which is under GPLv2+, too)
+  * Fix the following lintian warnings:
+    - copyright-refers-to-symlink-license
   * Thanks Jakub Wilk for many bugfix patches!
 
  --

@@ -60,8 +60,8 @@ is in the public domain, and debpaste, is:
 # MA 02110-1301 USA
 
 
-On Debian systems, a copy of the GNU General Public License may be
-found in /usr/share/common-licenses/GPL.
+On Debian systems, a copy of the GNU General Public License, version 2
+can be found in /usr/share/common-licenses/GPL-2.
 
 The program 'debpaste' has been retrieved (2010-10-02) from
 http://paste.debian.net/paste.pl?show_template=clients
