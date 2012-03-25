@@ -22,7 +22,7 @@ debian-goodies (0.60) unstable; urgency=low
   * [checkrestart]
      - Skip nagios spool files (Closes: #637238, thanks Guillaume Delacour)
      - Use service instead of direct call of initscript (Closes: #602186,
-       thanks Jörg Sommer)
+       #592436, thanks Jörg Sommer)
   * [bash_completion]
      - Install debmany bash completion file to /etc/bash_completion.d
        instead of as example. Rename it for easier use of dh_install.
