@@ -33,7 +33,6 @@ install: build
 	# Add here commands to install the package into debian/debian-goodies.
 	install -d $(CURDIR)/debian/debian-goodies/usr/bin
 	install -d $(CURDIR)/debian/debian-goodies/usr/sbin
-	install -d $(CURDIR)/debian/debian-goodies/etc/bash_completion.d
 	install -m 755 dgrep dglob debget dpigs debman popbugs which-pkg-broke \
 		dhomepage $(CURDIR)/debian/debian-goodies/usr/bin
 	install -m 755 checkrestart \
@@ -43,8 +42,6 @@ install: build
 	done
 	install -m 755 debmany/debmany \
 		$(CURDIR)/debian/debian-goodies/usr/bin
-	install -m 644 debmany/debmany.bash_completion \
-		$(CURDIR)/debian/debian-goodies/etc/bash_completion.d/debmany
 
 # Build architecture-dependent files here.
 # We have nothing to do by default.
@@ -60,6 +57,7 @@ binary-indep: build install
 		debmany/man/debmany.1 debmany/man/debmany.de.1
 #	dh_undocumented
 	dh_installchangelogs 
+	dh_install
 	dh_link
 	dh_compress
 	ln -s dgrep.1.gz debian/debian-goodies/usr/share/man/man1/degrep.1.gz
