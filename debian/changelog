@@ -20,7 +20,8 @@ debian-goodies (0.60) unstable; urgency=low
        #647158, thanks Kenyon Ralph)
      - Bump version number to 1.4
   * [checkrestart]
-     - Skip nagios spool files (Closes: #637238, thanks Guillaume Delacour)
+     - Skip nagios spool files (Closes: #637238, thanks Guillaume
+       Delacour)
      - Use service instead of direct call of initscript (Closes: #602186,
        #592436, thanks Jörg Sommer)
   * [bash_completion]
@@ -34,7 +35,7 @@ debian-goodies (0.60) unstable; urgency=low
     - debian-rules-missing-recommended-target
   * Thanks Jakub Wilk for many bugfix patches!
 
- --
+ -- Axel Beckert <abe@debian.org>  Sun, 25 Mar 2012 17:33:42 +0200
 
 debian-goodies (0.59) unstable; urgency=low
 
