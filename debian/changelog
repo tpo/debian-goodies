@@ -16,6 +16,9 @@ debian-goodies (0.60) unstable; urgency=low
      - Replace less by sensible-pager, remove dependency on less. (Closes:
        #610563)
      - Fix many typos in man pages (see #610563, thanks Justin B Rye!)
+     - Fix output from wrong package when backports are involved (Closes:
+       #647158, thanks Kenyon Ralph)
+     - Bump version number to 1.4
   * [bash_completion]
      - Install debmany bash completion file to /etc/bash_completion.d
        instead of as example. Rename it for easier use of dh_install.
