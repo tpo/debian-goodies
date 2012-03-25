@@ -311,6 +311,9 @@ def isdeletedFile (f):
     # Skip Nagios Spool
     if f.startswith('/var/lib/nagios3/spool/'):
         return 0
+    # Skip nagios spool files
+    if f.startswith('/var/lib/nagios3/spool/checkresults/'):
+	return 0
     # Skip, if asked to, files that do not belong to any package
     if onlyPackageFiles:
         file_in_package = False
