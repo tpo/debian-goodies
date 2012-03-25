@@ -20,6 +20,7 @@ debian-goodies (0.60) unstable; urgency=low
        completion which is under GPLv2+, too)
   * Fix the following lintian warnings:
     - copyright-refers-to-symlink-license
+    - debian-rules-missing-recommended-target
   * Thanks Jakub Wilk for many bugfix patches!
 
  --

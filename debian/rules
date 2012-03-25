@@ -7,8 +7,9 @@
 
 PODDOC=debget dglob dgrep dpigs
 
-build: build-stamp
-
+build: build-arch build-indep
+build-arch: build-stamp
+build-indep: build-stamp
 build-stamp:
 	dh_testdir
 
