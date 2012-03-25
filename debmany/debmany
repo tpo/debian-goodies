@@ -54,7 +54,7 @@ Description: Display a manpage or documentation files from a Debian package.
              Supported locations for debian packages are: Local .deb-file,
              a package in the repository or an installed package.
              The default for manpages is man - sensible-pager is used for other files.
-             Default can be overwritten with -k|-g|-x and -m -o.
+             Default can be overridden with -k|-g|-x and -m -o.
 Syntax1 : debmany [-?|-h|--help]
 Syntax2 : debmany [-v[v]] [-k|-g|-x] [-m manviewer] [-o otherviewer] [-L limit] [-l lang1[,...]] package[.deb]
 Syntax3 : debmany [-v[v]] [-k|-g|-x] [-m manviewer] [-o otherviewer] [-L limit] [-l lang1[,...]] -z [package[.deb]]
@@ -70,17 +70,17 @@ Examples: debmany foo.deb  show manpages from a local package file foo.deb
                            man: xdg-open man:%s   other: xdg-open %s
                            using xdg-open from xdg-utils package (Xfce users)
           debmany -m 'konqueror man:%s' -l 'de*,fr*' -L 5M foo
-                           show english, german and french manpages using
+                           show English, German and French manpages using
                            konqueror as man-viewer and ask if download size
                            exceeds 5M
           debmany -z -k    use zenity (as dialog) to select packages and files
           TMPDIR=~/tmp debmany -k -o 'foo.sh %s' -l de,fr -L 5M foo
                            use ~/tmp as temporary folder
-                           use KDE-defaults but overwrite viewer for other files
+                           use KDE-defaults but override viewer for other files
           debmany -v foo   show some debugging information (-vv show more)
           alias debmany='debmany -l de -L 5M -k'; debmany -m man -l 'zh*' foo
                            set an alias with your preferred options and
-                           overwrite them if needed"
+                           override them if needed"
   if [ $# -eq 0 ]
   then
     exit 0
