@@ -12,6 +12,9 @@ debian-goodies (0.60) unstable; urgency=low
        (Closes: #658846)
      - No more swallows all exceptions (Closes: #654458)
      - Correctly handle alternative dependencies (Closes: #516904)
+  * [debmany]
+     - Install bash completion file to /etc/bash_completion.d instead of
+       as example.
   * Thanks Jakub Wilk for many bugfix patches!
 
  --
