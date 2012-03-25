@@ -183,13 +183,13 @@ def main():
             if path.startswith('/etc/init.d/'):
                 if path.endswith('.sh'):
                     continue
-                package.initscripts.add(path)
+                package.initscripts.add(path[12:])
         # Alternatively, find init.d scripts that match the process name
         if len(package.initscripts) == 0:
             for process in package.processes:
-                path = '/etc/init.d/' + os.path.basename(process.program)
-                if os.path.exists(path):
-                    package.initscripts.add(path)
+                proc_name = os.path.basename(process.program)
+                if os.path.exists('/etc/init.d/' + proc_name):
+                    package.initscripts.add(proc_name)
 
     restartable = []
     nonrestartable = []
@@ -197,7 +197,7 @@ def main():
     for package in packages.values():
         if len(package.initscripts) > 0:
             restartable.append(package)
-            restartCommands.extend(map(lambda s: s + ' restart',package.initscripts))
+            restartCommands.extend(map(lambda s: 'service ' + s + ' restart',package.initscripts))
         else:
             nonrestartable.append(package)
             
