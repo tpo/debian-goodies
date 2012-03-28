@@ -153,6 +153,7 @@ def main():
     dpkgQuery = ["dpkg-query", "--search"] + programs.keys()
     dpkgProc = subprocess.Popen(dpkgQuery, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                 env = lc_all_c_env)
+    dpkgProc.wait()
     if verbose:
         print "Running:%s" % dpkgQuery
     for line in dpkgProc.stdout.readlines():
@@ -191,6 +192,7 @@ def main():
         dpkgQuery = ["dpkg-query", "--listfiles", package.name]
         dpkgProc = subprocess.Popen(dpkgQuery, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                 env = lc_all_c_env)
+        dpkgProc.wait()
         for line in dpkgProc.stdout.readlines():
             path = line[:-1]
             if path.startswith('/etc/init.d/'):
