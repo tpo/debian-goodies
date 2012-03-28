@@ -68,11 +68,12 @@ def main():
 
     lc_all_c_env = os.environ
     lc_all_c_env['LC_ALL'] = 'C'
-
+    blacklistFiles = []
+    blacklist = []
 
 # Process options
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hvpa", ["help", "verbose", "packages", "all"])
+        opts, args = getopt.getopt(sys.argv[1:], "hvpab:", ["help", "verbose", "packages", "all", "blacklist"])
     except getopt.GetoptError, err:
         # print help information and exit:
         print str(err) # will print something like "option -x not recognized"
@@ -98,8 +99,17 @@ def main():
         elif o in ("-a", "--all"):
             allFiles = True
             onlyPackageFiles = False
+        elif o in ("-b", "--blacklist"):
+            blacklistFiles.append(a)
+            onlyPackageFiles = False
         else:
             assert False, "unhandled option"
+
+    for f in blacklistFiles:
+        for line in file(f, "r"):
+            if line.startswith("#"):
+                continue
+            blacklist.append(re.compile(line.strip()))
 
 # Start checking
 
@@ -114,7 +124,7 @@ def main():
 # TODO - This does not work yet:
 #        toRestart = psdelcheck()
 
-    toRestart = lsofcheck()
+    toRestart = lsofcheck(blacklist = blacklist)
 
     print "Found %d processes using old versions of upgraded files" % len(toRestart)
 
@@ -226,7 +236,7 @@ def main():
         for process in package.processes:
             print "\t%s\t%s" % (process.pid,process.program)
 
-def lsofcheck():
+def lsofcheck(blacklist = None):
     processes = {}
 
     for line in os.popen('lsof +XL -F nf').readlines():
@@ -254,7 +264,7 @@ def lsofcheck():
             # Save the descriptor for later comparison
             process.descriptors.append(data)
 
-    toRestart = filter(lambda process: process.needsRestart(),
+    toRestart = filter(lambda process: process.needsRestart(blacklist),
                        processes.values())
     return toRestart
 
@@ -262,12 +272,16 @@ def lsofcheck():
 # Returns:
 #  - 0 (NO) for known locations of files which might be deleted
 #  - 1 (YES) for valid deleted files we are interested in
-def isdeletedFile (f):
+def isdeletedFile (f, blacklist = None):
 
     global lc_all_c_env
 
     if allFiles:
         return 1
+    if blacklist:
+        for p in blacklist:
+            if p.search(f):
+                return 0
     # We don't care about log files
     if f.startswith('/var/log/'):
         return 0
@@ -469,9 +483,9 @@ class Process:
     # Returns:
     #  - 0 if there is no need to restart the process
     #  - 1 if the process needs to be restarted
-    def needsRestart(self):
+    def needsRestart(self, blacklist = None):
         for f in self.files:
-            if isdeletedFile(f):
+            if isdeletedFile(f, blacklist):
 	    	return 1
 	for f in self.links:
 	    if f == 0:

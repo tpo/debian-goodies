@@ -1,7 +1,9 @@
 debian-goodies (0.61) unstable; urgency=low
 
   * [checkrestart] 
-     - Prover fix to avoid false positives due to /drm (Closes: 548380)
+     - Prover fix to avoid false positives due to /drm (Closes: #548380)
+     - Add patch provided by Tollef Fog Heen which includes a new -b
+       (blacklist) option (Closes: #649168)
 
  -- Javier Fernandez-Sanguino Pen~a <jfs@debian.org>  Wed, 28 Mar 2012 23:37:20 +0200
 

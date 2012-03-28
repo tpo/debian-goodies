@@ -57,6 +57,12 @@ simultaneously with the
 .I -p
 option.
 
+.TP
+.BI -b file, --blacklist=file
+Read a blacklist of regular expressions from
+.I file.
+Any files matching the patterns will be ignored.
+
 .SH EXIT STATUS
 
 The program will exit with error (1) if a non-root user tries to run it. Otherwise,
