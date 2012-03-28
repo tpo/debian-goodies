@@ -62,12 +62,13 @@ def usage():
     sys.stderr.write('usage: checkrestart [-vhpa]\n')
 
 def main():
-    global lc_all_c_env
+    global lc_all_c_env, file_query_check
     process = None
     toRestart = {}
 
     lc_all_c_env = os.environ
     lc_all_c_env['LC_ALL'] = 'C'
+    file_query_check = {}
     blacklistFiles = []
     blacklist = []
 
@@ -150,8 +151,10 @@ def main():
     packages = {}
     diverted = None
     dpkgQuery = ["dpkg-query", "--search"] + programs.keys()
-    dpkgProc = subprocess.Popen(dpkgQuery, stdout=subprocess.PIPE, stderr=None,
+    dpkgProc = subprocess.Popen(dpkgQuery, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                 env = lc_all_c_env)
+    if verbose:
+        print "Running:%s" % dpkgQuery
     for line in dpkgProc.stdout.readlines():
         if line.startswith('local diversion'):
             continue
@@ -186,7 +189,7 @@ def main():
         if package == 'util-linux':
             continue
         dpkgQuery = ["dpkg-query", "--listfiles", package.name]
-        dpkgProc = subprocess.Popen(dpkgQuery, stdout=subprocess.PIPE, stderr=None,
+        dpkgProc = subprocess.Popen(dpkgQuery, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                 env = lc_all_c_env)
         for line in dpkgProc.stdout.readlines():
             path = line[:-1]
@@ -268,13 +271,40 @@ def lsofcheck(blacklist = None):
                        processes.values())
     return toRestart
 
+# Tells if a file is part of a package
+# Returns:
+#  - False - file does not exist in the system or cannot be found when querying the package database
+#  - True  - file is found in an operating system package
+def ispackagedFile (f):
+    file_in_package = False
+    # First check if the file exists, do not call dpkg-query 
+    # if the file simply does not exist in the file system
+    if os.path.exists(f):
+    # If it exists, run dpkg-query
+        dpkgQuery = ["dpkg-query", "--search", f]
+        dpkgProc = subprocess.Popen(dpkgQuery, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                env = lc_all_c_env, close_fds=True)
+        dpkgProc.wait()
+        if verbose:
+            print "Running:%s" % dpkgQuery
+        for line in dpkgProc.stdout.readlines():
+            line = line.strip()
+            if line.find('no path found matching pattern ' + f) > 0:
+                file_in_package = False
+                break
+            if line.endswith(f):
+                file_in_package = True
+                break
+
+    return file_in_package
+
 # Tells if a file has to be considered a deleted file
 # Returns:
 #  - 0 (NO) for known locations of files which might be deleted
 #  - 1 (YES) for valid deleted files we are interested in
 def isdeletedFile (f, blacklist = None):
 
-    global lc_all_c_env
+    global lc_all_c_env, file_query_check
 
     if allFiles:
         return 1
@@ -330,20 +360,16 @@ def isdeletedFile (f, blacklist = None):
 	return 0
     # Skip, if asked to, files that do not belong to any package
     if onlyPackageFiles:
-        file_in_package = False
         # Remove some lsof information from the file to ensure that it is
         # a proper filename
         file_name = re.sub(r'\(.*\)','', f)
         file_name = re.sub(r'\s+$','', file_name)
-        dpkgQuery = ["dpkg-query", "--search", file_name]
-        dpkgProc = subprocess.Popen(dpkgQuery, stdout=subprocess.PIPE, stderr=None,
-                                env = lc_all_c_env)
-        for line in dpkgProc.stdout.readlines():
-            if line.endswith(f):
-                 file_in_package = True
-                 break
-        if not file_in_package:
-                 return 0
+        # First check: have we checked this file before? If we have not then make the check
+        if not file_name in file_query_check:
+                file_query_check[file_name] = ispackagedFile(file_name)
+        # Once we have the result then check if the file belongs to a package
+        if not file_query_check[file_name]:
+                return 0
 
     # TODO: it should only care about library files (i.e. /lib, /usr/lib and the like)
     # build that check with a regexp to exclude others
