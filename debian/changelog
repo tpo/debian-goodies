@@ -6,8 +6,10 @@ debian-goodies (0.61) unstable; urgency=low
        (blacklist) option (Closes: #649168)
      - Fix behaviour of the -p option in several ways to both ensure that the
        test is done properly and that it does not consume unnecesary CPU
-       resources. Also process STDERR instead of showing this to the
-       end-user (Closes: #657653, #513189)
+       resources. Also process STDERR instead of showing its contents to the
+       end-user. (Closes: #657653, #513189)
+     - The -p option now works also when libraries have been upgraded and the
+       files in use are no longer present in the file system.
 
  -- Javier Fernandez-Sanguino Pen~a <jfs@debian.org>  Wed, 28 Mar 2012 23:37:20 +0200
 
