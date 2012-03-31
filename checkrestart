@@ -273,31 +273,48 @@ def lsofcheck(blacklist = None):
                        processes.values())
     return toRestart
 
-# Tells if a file is part of a package
+# Tells if a given file is part of a package
 # Returns:
 #  - False - file does not exist in the system or cannot be found when querying the package database
 #  - True  - file is found in an operating system package
 def ispackagedFile (f):
     file_in_package = False
-    # First check if the file exists, do not call dpkg-query 
-    # if the file simply does not exist in the file system
-    if os.path.exists(f):
-    # If it exists, run dpkg-query
-        dpkgQuery = ["dpkg-query", "--search", f]
-        dpkgProc = subprocess.Popen(dpkgQuery, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                env = lc_all_c_env, close_fds=True)
-        dpkgProc.wait()
-        if verbose:
-            print "Running:%s" % dpkgQuery
-        for line in dpkgProc.stdout.readlines():
-            line = line.strip()
-            if line.find('no path found matching pattern ' + f) > 0:
-                file_in_package = False
-                break
-            if line.endswith(f):
-                file_in_package = True
-                break
+    file_regexp = False
+    if verbose:
+        print "Checking if file %s belongs to any package" % f
+    # First check if the file exists
+    if not os.path.exists(f):
+        if ( f.startswith('/lib/') or f.startswith('/usr/lib/') ) and re.compile("\.so[\d.]+$"):
+        # For libraries that do not exist then try to use a regular expression with the
+        # soname
+            f = re.compile("\.so[\d.]+$").sub(".so.*", f)
+            file_regexp = True
+        else:
+        # Do not call dpkg-query if the file simply does not exist in the file system
+        # just assume it does not belong to any package
+            return False
 
+    # If it exists, run dpkg-query
+    dpkgQuery = ["dpkg-query", "--search", f ]
+    dpkgProc = subprocess.Popen(dpkgQuery, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                env = lc_all_c_env, close_fds=True)
+    dpkgProc.wait()
+    if verbose:
+        print "Running:%s" % dpkgQuery
+    for line in dpkgProc.stdout.readlines():
+        line = line.strip()
+        if line.find('no path found matching pattern ' + f) > 0:
+            file_in_package = False
+            break
+        if line.endswith(f) or ( file_regexp and re.search(f, line)):
+            package  = re.compile(":.*$").sub("",line)
+            file_in_package = True
+            break
+
+    if file_in_package and verbose:
+        print "YES: File belongs to package %s" % package
+    if not file_in_package and verbose:
+        print "NO: File does not belongs to any package" 
     return file_in_package
 
 # Tells if a file has to be considered a deleted file
