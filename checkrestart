@@ -287,7 +287,10 @@ def ispackagedFile (f):
         if ( f.startswith('/lib/') or f.startswith('/usr/lib/') ) and re.compile("\.so[\d.]+$"):
         # For libraries that do not exist then try to use a regular expression with the
         # soname
-            f = re.compile("\.so[\d.]+$").sub(".so.*", f)
+        # In libraries, indent characters that could belong to a regular expression first
+            f = re.compile("\+").sub("\+", f)
+            f = re.compile(".so[\d.]+$").sub(".so.*", f)
+            f = re.compile("\.").sub("\.", f)
             file_regexp = True
         else:
         # Do not call dpkg-query if the file simply does not exist in the file system
