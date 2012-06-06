@@ -13,6 +13,8 @@ debian-goodies (0.61-0.1) unstable; urgency=low
      [NMU]
      - Add patch provided by Tomas Pospisek that assumes a vserver when PID 1
        is not readable (Closes: #674296)
+     - Add patch provided by Guillaume Delacour and Michal Fiala to find
+       services run by an interpreter (Closes: #657087)
 
  -- Tomas Pospisek <tpo@debian.org>  Wed, 06 Jun 2012 21:57:33 +0200
 
