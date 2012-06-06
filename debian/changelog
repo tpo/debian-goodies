@@ -1,4 +1,4 @@
-debian-goodies (0.61) unstable; urgency=low
+debian-goodies (0.61-0.1) unstable; urgency=low
 
   * [checkrestart] 
      - Prover fix to avoid false positives due to /drm (Closes: #548380)
@@ -10,8 +10,11 @@ debian-goodies (0.61) unstable; urgency=low
        end-user. (Closes: #657653, #513189)
      - The -p option now works also when libraries have been upgraded and the
        files in use are no longer present in the file system.
+     [NMU]
+     - Add patch provided by Tomas Pospisek that assumes a vserver when PID 1
+       is not readable (Closes: #674296)
 
- -- Javier Fernandez-Sanguino Pen~a <jfs@debian.org>  Wed, 28 Mar 2012 23:37:20 +0200
+ -- Tomas Pospisek <tpo@debian.org>  Wed, 06 Jun 2012 21:57:33 +0200
 
 debian-goodies (0.60) unstable; urgency=low
 
