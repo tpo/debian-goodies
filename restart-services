@@ -1,0 +1,129 @@
+#!/bin/bash
+# Description in function help, switch -h
+
+# Path to checkrestart
+#PATH_CHECKRESTART="/usr/bin/checkrestart"
+PATH_CHECKRESTART="/root/checkrestart/checkrestart"
+
+# Required binaries/scripts
+NEED="egrep sed"
+
+function help()
+{
+        echo "$0 [-h] [-n]"
+        echo "Script tries to restart services, which are recognized by checkrestart."
+        echo "Options:"
+        echo "  -h ... help"
+        echo "  -n ... dry run, do nothing, just print actions"
+        echo "  -a ... script is runned by apt-get, ignore check no_procs=no_services,"
+        echo "         add headers to output"
+        echo "Return codes:"
+        echo "  0 ... OK"
+        echo "  1 ... error"
+        echo "  2 ... warning"
+        exit 0
+}
+
+function warning()
+{
+    echo "! War: $@" 1>&2
+    EXIT=2
+}
+
+function error()
+{
+    echo "!! Err: $@" 1>&2
+    exit 1
+}
+
+function message()
+{
+    echo "$@"
+}
+
+function xeval()
+{
+    local cmd="$1"
+    local ret_func="$2"
+    local ret_str="Command \"$cmd\" returns"
+    [ -z "$ret_func" ] && ret_func="error"
+    message "$cmd"
+    [ "$DRYRUN" == "1" ] &&  cmd=":"
+    eval "$cmd" || $ret_func "$ret_str $?"
+}
+
+# starting exit code
+EXIT=0
+
+# arguments parsing
+while [ "$#" != "0" ]; do
+    case "$1" in
+        -n)
+            DRYRUN="1"
+           ;;
+        -a)
+            APTGET="1"
+           ;;
+        -h)
+            help
+            ;;
+    esac
+    shift
+done
+
+# header to apt-get output
+[ "$APTGET" == "1" ] && message "--- start $0"
+
+# check paths
+[ ! -x "$PATH_CHECKRESTART" ] &&
+    error "Can not execute $PATH_CHECKRESTART"
+
+# check required binaries/scripts
+for bin in $NEED; do
+    which "$bin" >& /dev/null || \
+        error "Required binary/script not found $@"
+done
+
+# get output of checkrestart
+output="`xeval $PATH_CHECKRESTART`"
+
+# write output
+message "$output"
+
+# check output
+[ -z "$output" ] &&
+    error "Ouput $PATH_CHECKRESTART is empty"
+
+# get no of processes to restart
+no_procs="`echo \"$output\" | \
+    egrep '^Found [0-9]+ processes using old versions of upgraded files' | \
+    sed 's/^Found \([0-9]*\).*/\1/'`"
+
+# restart services
+echo ""
+[ "$no_procs" != "0" ] && message "Try to restart services"
+
+IFS="
+"
+no_services=0
+for service in `echo "$output" | sed "/^These are the init scripts:/,//!d" | egrep "^service "`; do
+   xeval "$service" "warning"
+   no_services="$((no_services+1))"
+done
+
+# check if no of processes is equel to no of services
+if [ "$no_services" != "$no_procs" ]; then
+    # if is runned by apt-get, then this is just a message without error code
+    [ "$APTGET" == "1" ] && f="message" || f="warning"
+    $f "Number of processes ($no_procs) is not equel to number of services ($no_services)"
+fi
+
+# last messages
+[ "$EXIT" == "0" ] && \
+    message "Completed without problems" || \
+    warning "Completed with some warnings see above"
+
+# header to apt-get output
+[ "$APTGET" == "1" ] && message "--- end $0"
+
+exit $EXIT
