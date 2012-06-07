@@ -1,0 +1,9 @@
+#!/bin/sh
+#
+# copy this script into /etc/cron.daily
+#
+# if you also install the unattended-upgrades package then 
+# services that need it will be automatically restarted
+# after a security update
+
+restart-services

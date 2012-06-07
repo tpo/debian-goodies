@@ -53,6 +53,7 @@ binary-indep: build install
 	dh_testdir
 	dh_testroot
 	dh_installdocs README
+	dh_installexamples examples/restart-services
 	dh_installman debget.1 debman.1 dglob.1 dgrep.1 dpigs.1 popbugs.1 \
 		which-pkg-broke.1 checkrestart.1 restart-services.1 dhomepage.1 \
 		debmany/man/debmany.1 debmany/man/debmany.de.1
