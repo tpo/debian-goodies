@@ -1,0 +1,98 @@
+.\" restart-services.1 - restart services as indicated by checkrestart
+.\" Copyright (C) 2012 Tomás Pospíšek
+.\" Based on the checkrestart manual page by Javier Fernandez-Sanguino
+.\" Everybody is allowed to distribute this manual page,
+.\" to modify it, and to distribute modifed versions of it.
+.TH restart-services 1 "June 07 2012" "debian\-goodies" "debian\-goodies"
+.SH NAME
+restart-services \- restart services after an upgrade
+.SH SYNOPSIS
+.B restart-services [ -hsa ]
+.SH DESCRIPTION
+The
+.B restart-services
+program tries to determine if there are processes in the system
+that need to be restarted after a system upgrade by calling
+\fIcheckrestart\fR\|(1) and then restarts them. This can be necessary since
+an upgrade will usually install new system libraries and running processes
+will still be using the old versions of the libraries. In \fIstable\fP
+Debian GNU/Linux systems this is typically needed to eliminate a system
+exposure to a vulnerability which might have been fixed by upgrading a
+library which that process makes use of.
+
+.P 
+Consequently,
+.B restart-services
+is used as a tool to find outdated versions of libraries in use, and to
+restart the respective services that are still using them, particularly
+after security upgrades.  Administrators should not, however, rely on it
+completely (see the \fBBUGS\fP section of the \fIcheckrestart\fR\|(1)
+manpage).
+
+.P 
+This script needs to run as root in order to obtain the information it needs
+for analysis and to restart the services.
+
+.SH OPTIONS
+
+.TP
+.BI -h, --help
+Show the program help and exit.
+
+.TP
+.BI -s, --simulate
+Don't change anything, just print out what would be done.
+
+.TP
+.BI -a
+Tell restart-services that it is being run by apt-get: ignore check
+no_procs=no_services and add headers to output.
+
+.SH EXIT STATUS
+
+The program will exit with error (1) if it couldn't restart services
+and with warning (2) if there were programms running that it could
+not figure out how to restart. Otherwise, it will always exit with
+error status 0.
+
+.SH BUGS
+Please see the \fBBUGS\fP section of the \fIcheckrestart\fR\|(1) manpage
+for possible problems with restart-services.
+
+.P 
+If you find a false positive in
+.B restart-services
+please provide the following information when submitting a bug report:
+
+.IP \(em
+The output of \fBcheckrestart\fP using the \fI-v\fP (verbose) option.
+
+.IP \(em
+The output of running the following command as root:
+.PP
+        lsof | egrep 'delete|DEL|path inode'
+.PP
+
+.SH  SEE ALSO
+.B lsof(8), checkrestart(1)
+
+.SH AUTHOR
+
+.B restart-services
+was written by Michal Fiala for Sourcepole.ch.
+
+.PP
+This manpage was written by Tomáš Pospíšek <tpo_deb@sourcepole.ch>.
+
+.SH COPYRIGHT AND LICENCE
+
+Copyright (C) 2012 Sourcepole.ch
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2, or (at your option)
+any later version.
+
+On Debian systems, a copy of the GNU General Public License may be
+found in /usr/share/common-licenses/GPL.
+

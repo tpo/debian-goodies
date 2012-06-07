@@ -1,38 +1,40 @@
 #!/bin/bash
-# Description in function help, switch -h
+
+function help()
+{
+    cat<<-EOH
+	$0 [-h|--help] [-n] [-a]
+	Try to restart services, as indicated by checkrestart.
+
+	Options:
+	  -h, --help      ... help
+	  -s, --simulate  ... simulate, do nothing, just print actions
+	  -a              ... script is run by apt-get, ignore check
+	                      no_procs=no_services, add headers to output
+
+	Return codes:
+	  0 ... OK
+	  1 ... error
+	  2 ... warning
+EOH
+        exit 0
+}
 
 # Path to checkrestart
-#PATH_CHECKRESTART="/usr/bin/checkrestart"
-PATH_CHECKRESTART="/root/checkrestart/checkrestart"
+PATH_CHECKRESTART="/usr/sbin/checkrestart"
 
 # Required binaries/scripts
 NEED="egrep sed"
 
-function help()
-{
-        echo "$0 [-h] [-n]"
-        echo "Script tries to restart services, which are recognized by checkrestart."
-        echo "Options:"
-        echo "  -h ... help"
-        echo "  -n ... dry run, do nothing, just print actions"
-        echo "  -a ... script is runned by apt-get, ignore check no_procs=no_services,"
-        echo "         add headers to output"
-        echo "Return codes:"
-        echo "  0 ... OK"
-        echo "  1 ... error"
-        echo "  2 ... warning"
-        exit 0
-}
-
 function warning()
 {
-    echo "! War: $@" 1>&2
+    echo "! Warning: $@" 1>&2
     EXIT=2
 }
 
 function error()
 {
-    echo "!! Err: $@" 1>&2
+    echo "!! Error: $@" 1>&2
     exit 1
 }
 
@@ -58,13 +60,13 @@ EXIT=0
 # arguments parsing
 while [ "$#" != "0" ]; do
     case "$1" in
-        -n)
+        -s|--simulate)
             DRYRUN="1"
            ;;
         -a)
             APTGET="1"
            ;;
-        -h)
+        -h|--help)
             help
             ;;
     esac
@@ -92,16 +94,16 @@ message "$output"
 
 # check output
 [ -z "$output" ] &&
-    error "Ouput $PATH_CHECKRESTART is empty"
+    error "Output of $PATH_CHECKRESTART was empty"
 
-# get no of processes to restart
+# count number of processes to restart
 no_procs="`echo \"$output\" | \
     egrep '^Found [0-9]+ processes using old versions of upgraded files' | \
     sed 's/^Found \([0-9]*\).*/\1/'`"
 
 # restart services
 echo ""
-[ "$no_procs" != "0" ] && message "Try to restart services"
+[ "$no_procs" != "0" ] && message "Trying to restart services..."
 
 IFS="
 "
@@ -111,7 +113,7 @@ for service in `echo "$output" | sed "/^These are the init scripts:/,//!d" | egr
    no_services="$((no_services+1))"
 done
 
-# check if no of processes is equel to no of services
+# check if no of processes is equal to no of services
 if [ "$no_services" != "$no_procs" ]; then
     # if is runned by apt-get, then this is just a message without error code
     [ "$APTGET" == "1" ] && f="message" || f="warning"
