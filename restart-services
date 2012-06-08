@@ -30,8 +30,7 @@ function help()
 	Options:
 	  -h, --help      ... help
 	  -s, --simulate  ... simulate, do nothing, just print actions
-	  -a              ... script is run by apt-get, ignore check
-	                      no_procs=no_services, add headers to output
+	  -a              ... script is run by apt-get, add headers to output
 
 	Return codes:
 	  0 ... OK
@@ -136,9 +135,7 @@ done
 
 # check if no of processes is equal to no of services
 if [ "$no_services" != "$no_procs" ]; then
-    # if is runned by apt-get, then this is just a message without error code
-    [ "$APTGET" == "1" ] && f="message" || f="warning"
-    $f "Number of processes ($no_procs) is not equel to number of services ($no_services)"
+    warning "Number of processes ($no_procs) is not equel to number of services ($no_services)"
 fi
 
 # last messages
