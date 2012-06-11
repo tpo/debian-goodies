@@ -6,4 +6,7 @@
 # services that need it will be automatically restarted
 # after a security update
 
-restart-services
+tmp_output=`mktemp /tmp/cron-daily-restart-services.XXXXXX`
+restart-services >$tmp_output 2>&1
+[ "$1" != 0 ] && cat $tmp_output
+rm $tmp_output 
