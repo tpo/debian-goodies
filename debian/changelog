@@ -1,4 +1,4 @@
-debian-goodies (0.61-0.2) unstable; urgency=low
+debian-goodies (0.61-0.3) unstable; urgency=low
 
   * [checkrestart] 
      - Prover fix to avoid false positives due to /drm (Closes: #548380)
@@ -18,7 +18,7 @@ debian-goodies (0.61-0.2) unstable; urgency=low
   * added new script restart-services, which restarts services as indicated
     by checkrestart. By Michal Fiala, commissioned by Sourcepole.ch
 
- -- Tomas Pospisek <tpo_deb@sourcepole.ch>  Thu, 07 Jun 2012 14:04:38 +0200
+ -- Tomas Pospisek <tpo_deb@sourcepole.ch>  Mon, 11 Jun 2012 07:36:46 +0200
 
 debian-goodies (0.60) unstable; urgency=low
 
