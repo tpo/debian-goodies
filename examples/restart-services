@@ -7,6 +7,12 @@
 # after a security update
 
 tmp_output=`mktemp /tmp/cron-daily-restart-services.XXXXXX`
+
 restart-services >$tmp_output 2>&1
-[ "$1" != 0 ] && cat $tmp_output
+exit_status=$?
+if [ "$exit_status" != 0 ]; then
+  cat $tmp_output
+fi
+
 rm $tmp_output 
+exit $exit_status
