@@ -135,7 +135,7 @@ done
 
 # check if no of processes is equal to no of services
 if [ "$no_services" != "$no_procs" ]; then
-    warning "Number of processes ($no_procs) is not equel to number of services ($no_services)"
+    warning "Number of processes ($no_procs) is not equal to number of services ($no_services)"
 fi
 
 # last messages
