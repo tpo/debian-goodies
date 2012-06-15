@@ -3,13 +3,20 @@ debian-goodies (0.61) unstable; urgency=low
   * [checkrestart] 
      - Prover fix to avoid false positives due to /drm (Closes: #548380)
      - Add patch provided by Tollef Fog Heen which includes a new -b
-       (blacklist) option (Closes: #649168)
+       (blacklist) option. This makes it possible for system
+       administrators to prevent false positives or known issues
+       from reports (Closes: #649168, 632032)
      - Fix behaviour of the -p option in several ways to both ensure that the
        test is done properly and that it does not consume unnecesary CPU
        resources. Also process STDERR instead of showing its contents to the
        end-user. (Closes: #657653, #513189)
      - The -p option now works also when libraries have been upgraded and the
        files in use are no longer present in the file system.
+     - Do not abort if running in a vserver environment. In these environments
+       the init system (i.e PID 1) is unaccessible. (Closes: 674296)
+  * [debget] 
+     - Allow error in apt calls since those are handled by the script 
+       (Closes: 676715)
 
  -- Javier Fernandez-Sanguino Pen~a <jfs@debian.org>  Wed, 28 Mar 2012 23:37:20 +0200
 
