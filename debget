@@ -41,6 +41,7 @@ case $1 in
 esac
 
 # First check if apt-get is sane enough before proceeding
+set +e 
 apt-get -q2 --print-uris --reinstall install "dpkg" 2>/dev/null >/dev/null
 if [ $? -ne 0 ] ; then
 	echo "ERROR: There was an error calling apt-get. Check that the database is in a consistent state and try again"
@@ -50,9 +51,11 @@ if ! ls /var/lib/apt/lists/ |grep Release >/dev/null; then
     echo "ERROR: Your apt lists are empty. Update your package database"
     echo "using 'apt-get update'"
 fi
+set -e 
 
 
 for pkgspec in $*; do
+   set +e
    apt-get -q2 --print-uris --reinstall install "$pkgspec" 2>/dev/null >/dev/null
    if [ $? -ne 0 ] ; then
 	echo "ERROR: There is no '$pkgspec' package. Sorry."
@@ -60,6 +63,7 @@ for pkgspec in $*; do
         echo "package database using 'apt-get update'"
 	continue
    fi
+   set -e
   # This provides only one version, but it's better than the apt-get
   # call which will not work in packages not available locally
   apt-cache show "$pkgspec" 2>/dev/null | grep ^Ver |  
