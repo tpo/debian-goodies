@@ -493,7 +493,7 @@ class Process:
             self.program = os.readlink('/proc/%d/exe' % self.pid)
         except OSError, e:
             if e.errno != errno.ENOENT:
-                raise
+                sys.stderr.write('ERROR: Failed to read %d' % self.pid)
         self.program = self.cleanFile(self.program)
 
     def cleanFile(self, f):
