@@ -493,7 +493,11 @@ class Process:
             self.program = os.readlink('/proc/%d/exe' % self.pid)
         except OSError, e:
             if e.errno != errno.ENOENT:
-                sys.stderr.write('ERROR: Failed to read %d' % self.pid)
+                if self.pid == 1:
+                    sys.stderr.write("Found unreadable pid 1. Assuming we're under vserver and continuing.\n")
+                else:
+                    sys.stderr.write('ERROR: Failed to read %d' % self.pid)
+                    raise
         self.program = self.cleanFile(self.program)
 
     def cleanFile(self, f):
