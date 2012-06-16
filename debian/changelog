@@ -14,11 +14,16 @@ debian-goodies (0.61) unstable; urgency=low
        files in use are no longer present in the file system.
      - Do not abort if running in a vserver environment. In these environments
        the init system (i.e PID 1) is unaccessible. (Closes: 674296)
+     - Introduce a -i option to make it possible to ignore a given set of
+       packages from the output
+     - Fix reading of dpkg-query process which can deadlock due to buffering
+       when --query is given too many arguments or --listfiles returns a long
+       list of items
   * [debget] 
      - Allow error in apt calls since those are handled by the script 
        (Closes: 676715)
 
- -- Javier Fernandez-Sanguino Pen~a <jfs@debian.org>  Wed, 28 Mar 2012 23:37:20 +0200
+ -- Javier Fernandez-Sanguino Pen~a <jfs@debian.org>  Sat, 16 Jun 2012 04:22:24 +0200
 
 debian-goodies (0.60) unstable; urgency=low
 
