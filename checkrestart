@@ -71,7 +71,7 @@ def main():
     file_query_check = {}
     blacklistFiles = []
     blacklist = []
-    ignorelist = []
+    ignorelist = [ 'util-linux', 'screen' ]
 
 # Process options
     try:
@@ -204,8 +204,6 @@ def main():
 
     for package in packages.values():
         skip = False
-        if package.name == 'util-linux':
-            skip = True
         if ignorelist:
             for i in ignorelist:
                 if i in package.name > 0:
