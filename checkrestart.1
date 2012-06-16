@@ -6,7 +6,7 @@
 .SH NAME
 checkrestart \- check which processes need to be restarted after an upgrade
 .SH SYNOPSIS
-.B checkrestart [ -hvpa ] [ -bblacklist ]
+.B checkrestart [ -hvpa ] [ -b blacklist_file ] [ -i package_name ]
 .SH DESCRIPTION
 The
 .B checkrestart
@@ -58,10 +58,15 @@ simultaneously with the
 option.
 
 .TP
-.BI -b file, --blacklist=file
+.BI -b\ file, --blacklist=file
 Read a blacklist of regular expressions from
 .I file.
 Any files matching the patterns will be ignored.
+
+.TP
+.BI -i\ name, --ignore=name
+Ignore services that are associated to the package name provided in
+.I name.
 
 .SH EXIT STATUS
 
