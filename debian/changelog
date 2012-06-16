@@ -16,6 +16,8 @@ debian-goodies (0.61) unstable; urgency=low
        the init system (i.e PID 1) is unaccessible. (Closes: 674296)
      - Introduce a -i option to make it possible to ignore a given set of
        packages from the output
+     - Add util-linux and screen to the default ignorelist since these
+       packages' initscripts are no-op (Closes: #673045)
      - Fix reading of dpkg-query process which can deadlock due to buffering
        when --query is given too many arguments or --listfiles returns a long
        list of items
