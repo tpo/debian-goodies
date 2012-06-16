@@ -19,6 +19,8 @@ debian-goodies (0.61) unstable; urgency=low
      - Fix reading of dpkg-query process which can deadlock due to buffering
        when --query is given too many arguments or --listfiles returns a long
        list of items
+     - Improve handling of interpreted files using patch provided by Guillaume
+       Delacour and Michal Fiala (Closes: #657087)
   * [debget] 
      - Allow error in apt calls since those are handled by the script 
        (Closes: 676715)
