@@ -536,7 +536,6 @@ class Process:
                     if m:
                         # store the real full path of script as the program
                         self.program = m.group(1)
-
         except OSError, e:
             if e.errno != errno.ENOENT:
                 if self.pid == 1:
