@@ -59,7 +59,7 @@ def find_cmd(cmd):
      return 1
 
 def usage():
-    sys.stderr.write('usage: checkrestart [-vhpa]\n')
+    sys.stderr.write('usage: checkrestart [-vhpa] [-bblacklist] [-iignore]\n')
 
 def main():
     global lc_all_c_env, file_query_check
@@ -71,10 +71,11 @@ def main():
     file_query_check = {}
     blacklistFiles = []
     blacklist = []
+    ignorelist = [ 'util-linux', 'screen' ]
 
 # Process options
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hvpab:", ["help", "verbose", "packages", "all", "blacklist"])
+        opts, args = getopt.getopt(sys.argv[1:], "hvpab:i:", ["help", "verbose", "packages", "all", "blacklist", "ignore"])
     except getopt.GetoptError, err:
         # print help information and exit:
         print str(err) # will print something like "option -x not recognized"
@@ -103,6 +104,8 @@ def main():
         elif o in ("-b", "--blacklist"):
             blacklistFiles.append(a)
             onlyPackageFiles = False
+        elif o in ("-i", "--ignore"):
+            ignorelist.append(a)
         else:
             assert False, "unhandled option"
 
@@ -150,34 +153,47 @@ def main():
 
     packages = {}
     diverted = None
+
     dpkgQuery = ["dpkg-query", "--search"] + programs.keys()
-    dpkgProc = subprocess.Popen(dpkgQuery, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+    dpkgProc = subprocess.Popen(dpkgQuery, shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                                 env = lc_all_c_env)
-    dpkgProc.wait()
     if verbose:
         print "Running:%s" % dpkgQuery
-    for line in dpkgProc.stdout.readlines():
-        if line.startswith('local diversion'):
-            continue
-        
-        m = re.match('^diversion by (\S+) (from|to): (.*)$', line)
-        if m:
-            if m.group(2) == 'from':
-                diverted = m.group(3)
+    while True:
+            line = dpkgProc.stdout.readline()
+            if not line:
+                break
+            if verbose:
+                print "Reading line: %s" % line
+            if line.startswith('local diversion'):
                 continue
-            if not diverted:
-                raise Exception('Weird error while handling diversion')
-            packagename, program = m.group(1), diverted
-        else:
-            packagename, program = line[:-1].split(': ')
-            if program == diverted:
-                # dpkg prints a summary line after the diversion, name both
-                # packages of the diversion, so ignore this line
-                # mutt-patched, mutt: /usr/bin/mutt
+            if not ':' in line:
                 continue
 
-        packages.setdefault(packagename,Package(packagename))
-        packages[packagename].processes.extend(programs[program])
+            m = re.match('^diversion by (\S+) (from|to): (.*)$', line)
+            if m:
+                if m.group(2) == 'from':
+                    diverted = m.group(3)
+                    continue
+                if not diverted:
+                    raise Exception('Weird error while handling diversion')
+                packagename, program = m.group(1), diverted
+            else:
+                 packagename, program = line[:-1].split(': ')
+                 if program == diverted:
+                     # dpkg prints a summary line after the diversion, name both
+                     # packages of the diversion, so ignore this line
+                     # mutt-patched, mutt: /usr/bin/mutt
+                    continue
+            packages.setdefault(packagename,Package(packagename))
+            try:
+                 packages[packagename].processes.extend(programs[program])
+            except KeyError:
+                  sys.stderr.write ('checkrestart (program not found): %s: %s\n' % (packagename, program))
+            sys.stdout.flush()
+
+    # Close the pipe
+    dpkgProc.stdout.close()
 
     print "(%d distinct packages)" % len(packages)
 
@@ -187,18 +203,28 @@ def main():
         sys.exit(0)
 
     for package in packages.values():
-        if package == 'util-linux':
+        skip = False
+        if ignorelist:
+            for i in ignorelist:
+                if i in package.name > 0:
+                    skip = True
+        if skip:
             continue
         dpkgQuery = ["dpkg-query", "--listfiles", package.name]
         dpkgProc = subprocess.Popen(dpkgQuery, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                 env = lc_all_c_env)
-        dpkgProc.wait()
-        for line in dpkgProc.stdout.readlines():
+        while True:
+            line = dpkgProc.stdout.readline()
+            if not line:
+                break
             path = line[:-1]
             if path.startswith('/etc/init.d/'):
                 if path.endswith('.sh'):
                     continue
                 package.initscripts.add(path[12:])
+            sys.stdout.flush()
+        dpkgProc.stdout.close()
+
         # Alternatively, find init.d scripts that match the process name
         if len(package.initscripts) == 0:
             for process in package.processes:
@@ -237,6 +263,13 @@ def main():
     # TODO - consider putting this in a --verbose option
     print "These processes do not seem to have an associated init script to restart them:"
     for package in nonrestartable:
+        skip = False
+        if ignorelist:
+            for i in ignorelist:
+                if i in package.name > 0:
+                    skip = True
+        if skip:
+            continue
         print package.name + ':'
         for process in package.processes:
             print "\t%s\t%s" % (process.pid,process.program)
@@ -503,12 +536,13 @@ class Process:
                     if m:
                         # store the real full path of script as the program
                         self.program = m.group(1)
-            
+
         except OSError, e:
             if e.errno != errno.ENOENT:
                 if self.pid == 1:
                     sys.stderr.write("Found unreadable pid 1. Assuming we're under vserver and continuing.\n")
                 else:
+                    sys.stderr.write('ERROR: Failed to read pid %d' % self.pid)
                     raise
         self.program = self.cleanFile(self.program)
 
