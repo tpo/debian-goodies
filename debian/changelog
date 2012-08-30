@@ -1,3 +1,14 @@
+debian-goodies (0.61-0.6) unstable; urgency=low
+
+  * [NMU]
+  * [restart-services] 
+    - drop this check:
+      - "Warning: Number of processes (11) is not equal to number of services (5)"
+      - noise to usefulnes ratio is to high, i.e. there are just too
+        many services that have more than one service running
+
+ -- Tomas Pospisek <tpo_deb@sourcepole.ch>  Thu, 30 Aug 2012 11:36:36 +0200
+
 debian-goodies (0.61-0.5) unstable; urgency=low
 
   * [NMU]
