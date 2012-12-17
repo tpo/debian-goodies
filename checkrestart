@@ -526,7 +526,7 @@ class Process:
             self.program = os.readlink('/proc/%d/exe' % self.pid)
             # if the executable command is an interpreter such as perl/python,
             # we want to find the real program
-            m = re.match("^/usr/bin/(perl|python)$", self.program)
+            m = re.match("^/usr/bin/(perl|python)( \(deleted\))*$", self.program)
             if m:
                 with open('/proc/%d/cmdline' % self.pid, 'r') as cmdline:
                     # only match program in /usr (ex.: /usr/sbin/smokeping)
