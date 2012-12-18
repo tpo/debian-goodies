@@ -526,13 +526,18 @@ class Process:
             self.program = os.readlink('/proc/%d/exe' % self.pid)
             # if the executable command is an interpreter such as perl/python,
             # we want to find the real program
-            m = re.match("^/usr/bin/(perl|python)$", self.program)
+            m = re.match("^/usr/bin/(perl|python)", self.program)
             if m:
                 with open('/proc/%d/cmdline' % self.pid, 'r') as cmdline:
                     # only match program in /usr (ex.: /usr/sbin/smokeping)
                     # ignore child, etc.
                     #m = re.search(r'^(([/]\w*){1,5})\s.*$', cmdline.read())
-                    m = re.search(r'^(/usr/\S+)$', cmdline.read())
+                    data = cmdline.read().split('\x00')
+                    if not data[-1]: data.pop()
+                    data = data[len(data)>=2].split()
+                    if data and data[0]: data = data[0]
+                    data = self.which(data)
+                    m = re.search(r'^(/usr/\S+)$', data)
                     if m:
                         # store the real full path of script as the program
                         self.program = m.group(1)
@@ -544,6 +549,20 @@ class Process:
                     sys.stderr.write('ERROR: Failed to read %d' % self.pid)
                     raise
         self.program = self.cleanFile(self.program)
+
+    def which(self, program):
+        if os.path.isabs(program):
+            return program
+        path = os.environ.get("PATH", os.defpath).split(os.pathsep)
+        seen = set()
+        for dir in path:
+            dir = os.path.normcase(os.path.abspath(dir))
+            if not dir in seen:
+                seen.add(dir)
+                name = os.path.join(dir, program)
+                if os.path.exists(name) and os.access(name, os.F_OK|os.X_OK) and not os.path.isdir(name):
+                    return name
+        return program
 
     def cleanFile(self, f):
         # /proc/pid/exe has all kinds of junk in it sometimes
