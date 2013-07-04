@@ -5,7 +5,7 @@ debian-goodies (0.62) UNRELEASED; urgency=low
     - don't get confused by deleted interpreters (Closes: #696139)
 
   [ Axel Beckert ]
-  * Bump debhelper compatibility to 7 to be able to use some more recent
+  * Bump debhelper compatibility to 9 to be able to use some more recent
     features. Update versioned debhelper build-dependency accordingly.
   * Revamp debian/rules
     + No more remove stamp files manually.
