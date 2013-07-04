@@ -11,6 +11,10 @@ debian-goodies (0.62) UNRELEASED; urgency=low
   * [check-enhancements]
     - New command by George Danchev (Closes: #679927)
     - Add build-dependency on help2man for check-enhancements' man page
+  * [which-pkg-broke]
+    - Use 2x dpkg instead of dpkg-architecture  (Closes: #665880)
+    - Don't read architecture list again for each package to check (much
+      faster now, thanks to Jakub Wilk for the idea!)
   * Bump debhelper compatibility to 9 to be able to use some more recent
     features. Update versioned debhelper build-dependency accordingly.
   * Revamp debian/rules
