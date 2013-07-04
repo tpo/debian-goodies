@@ -7,6 +7,7 @@ debian-goodies (0.62) UNRELEASED; urgency=low
   [ Axel Beckert ]
   * [dgrep]
     + Support (d)zegrep and (d)zfgrep.
+    + Fix quoting to allow patterns with blanks
   * Bump debhelper compatibility to 9 to be able to use some more recent
     features. Update versioned debhelper build-dependency accordingly.
   * Revamp debian/rules

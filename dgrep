@@ -66,4 +66,4 @@ while test $# -ne 0; do
     shift
 done
 
-exec dglob -0f "$@" | xargs -0r $prog $opts $pat
+exec dglob -0f "$@" | xargs -0r $prog $opts "$pat"
