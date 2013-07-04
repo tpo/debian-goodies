@@ -6,7 +6,7 @@ Uploaders: Axel Beckert <abe@debian.org>
 Build-Depends: debhelper (>= 9~)
 Vcs-Git: git://anonscm.debian.org/collab-maint/debian-goodies.git
 Vcs-Browser: http://anonscm.debian.org/gitweb/?p=collab-maint/debian-goodies.git
-Standards-Version: 3.9.3
+Standards-Version: 3.9.4
 
 Package: debian-goodies
 Architecture: all
