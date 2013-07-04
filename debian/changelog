@@ -1,9 +1,13 @@
 debian-goodies (0.62) UNRELEASED; urgency=low
 
+  [ Paul Wise ]
   * [checkrestart]
     - don't get confused by deleted interpreters (Closes: #696139)
 
- -- Paul Wise <pabs@debian.org>  Tue, 18 Dec 2012 21:01:54 +0800
+  [ Axel Beckert ]
+  * Apply wrap-and-sort
+
+ -- Axel Beckert <abe@debian.org>  Thu, 04 Jul 2013 17:28:35 +0200
 
 debian-goodies (0.61) unstable; urgency=low
 

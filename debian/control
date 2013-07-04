@@ -10,9 +10,16 @@ Standards-Version: 3.9.3
 
 Package: debian-goodies
 Architecture: all
-Depends: dctrl-tools | grep-dctrl, perl, curl, python (>= 2.4), whiptail | dialog, ${misc:Depends}
+Depends: curl,
+         dctrl-tools | grep-dctrl,
+         perl,
+         python (>= 2.4),
+         whiptail | dialog,
+         ${misc:Depends}
 Recommends: lsof
-Suggests: popularity-contest, xdg-utils, zenity
+Suggests: popularity-contest,
+          xdg-utils,
+          zenity
 Conflicts: debget
 Replaces: debget
 Description: Small toolbox-style utilities for Debian systems
