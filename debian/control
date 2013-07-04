@@ -33,12 +33,14 @@ Description: Small toolbox-style utilities for Debian systems
  These are also included, because they are useful and don't justify
  their own packages:
  .
-  debget          - Fetch a .deb for a package in APT's database
-  dpigs           - Show which installed packages occupy the most space
-  debman          - Easily view man pages from a binary .deb without extracting
-  debmany         - Select manpages of installed or uninstalled packages
-  checkrestart    - Help to find and restart processes which are using old
-                    versions of upgraded files (such as libraries)
-  popbugs         - Display a customized release-critical bug list based on
-                    packages you use (using popularity-contest data)
-  which-pkg-broke - find which package might have broken another
+  debget             - Fetch a .deb for a package in APT's database
+  dpigs              - Show which installed packages occupy the most space
+  debman             - Easily view man pages from a binary .deb without
+                       extracting
+  debmany            - Select manpages of installed or uninstalled packages
+  checkrestart       - Help to find and restart processes which are using old
+                       versions of upgraded files (such as libraries)
+  popbugs            - Display a customized release-critical bug list based
+                       on packages you use (using popularity-contest data)
+  which-pkg-broke    - find which package might have broken another
+  check-enhancements - find packages which enhance installed packages

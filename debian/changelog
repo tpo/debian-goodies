@@ -1,3 +1,9 @@
+debian-goodies (0.63) UNRELEASED; urgency=low
+
+  * Mention check-enhancements in the long description
+
+ -- Axel Beckert <abe@debian.org>  Thu, 04 Jul 2013 22:21:36 +0200
+
 debian-goodies (0.62) unstable; urgency=low
 
   [ Paul Wise ]
