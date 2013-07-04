@@ -39,7 +39,7 @@ binary-arch: build install
 binary-indep: build install
 	dh_testdir
 	dh_testroot
-	dh_installdocs README
+	dh_installdocs
 	dh_installman
 #	dh_undocumented
 	dh_installchangelogs 
