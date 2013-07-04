@@ -20,7 +20,6 @@ build-stamp:
 clean:
 	dh_testdir
 	dh_testroot
-	rm -f build-stamp
 	for prog in $(PODDOC); do rm -f $$prog.1; done
 
 	dh_clean

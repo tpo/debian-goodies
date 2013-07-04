@@ -7,6 +7,7 @@ debian-goodies (0.62) UNRELEASED; urgency=low
   [ Axel Beckert ]
   * Bump debhelper compatibility to 7 to be able to use some more recent
     features. Update versioned debhelper build-dependency accordingly.
+    + No more remove stamp files manually.
   * Use debian/links instead of calling ln manually in debian/rules
   * Use dh_install/dh_link to install all the scripts
   * Use debian/manpages instead of parameters to dh_installman
