@@ -7,12 +7,14 @@ debian-goodies (0.62) UNRELEASED; urgency=low
   [ Axel Beckert ]
   * Bump debhelper compatibility to 7 to be able to use some more recent
     features. Update versioned debhelper build-dependency accordingly.
+  * Revamp debian/rules
     + No more remove stamp files manually.
-  * Use debian/links instead of calling ln manually in debian/rules
-  * Use dh_install/dh_link to install all the scripts
-  * Use debian/manpages instead of parameters to dh_installman
-  * Use debian/docs instead of parameters to dh_installdocs
-  * Fix lintian warning dh-clean-k-is-deprecated and use dh_prep
+    + Use debian/links instead of calling ln manually in debian/rules
+    + Use dh_install/dh_link to install all the scripts
+    + Use debian/manpages instead of parameters to dh_installman
+    + Use debian/docs instead of parameters to dh_installdocs
+    + Fix lintian warning dh-clean-k-is-deprecated and use dh_prep
+    + Finally switch to dh v7 style debian/rules file
   * Apply wrap-and-sort
 
  -- Axel Beckert <abe@debian.org>  Thu, 04 Jul 2013 17:28:35 +0200
