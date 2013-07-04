@@ -17,6 +17,7 @@ debian-goodies (0.62) UNRELEASED; urgency=low
       faster now, thanks to Jakub Wilk for the idea!)
   * [debmany]
     - Use curl --location to support redirects (Closes: #679225)
+    - No more use /dev/shm for temporary files (Closes: #679457)
   * [checkrestart]
     - Check ignorelist for package name equality, not substring match.
       Thanks Francesco Poli! (Closes: #696533)

@@ -232,7 +232,7 @@ else
   trap 'test -n "$temp" && rm -rf "$temp"; exit' 0 2 15 # cleanup
 
   # find a directory for temporary files (you can use $TMPDIR to specify the destination)
-  for tmp in "$TMPDIR" /dev/shm /tmp /var/tmp
+  for tmp in "$TMPDIR" /tmp /var/tmp
   do
     test -d "$tmp" && break
   done
