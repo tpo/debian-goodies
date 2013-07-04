@@ -17,6 +17,9 @@ debian-goodies (0.62) UNRELEASED; urgency=low
       faster now, thanks to Jakub Wilk for the idea!)
   * [debmany]
     - Use curl --location to support redirects (Closes: #679225)
+  * [checkrestart]
+    - Check ignorelist for package name equality, not substring match.
+      Thanks Francesco Poli! (Closes: #696533)
   * Bump debhelper compatibility to 9 to be able to use some more recent
     features. Update versioned debhelper build-dependency accordingly.
   * Revamp debian/rules

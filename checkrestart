@@ -206,7 +206,7 @@ def main():
         skip = False
         if ignorelist:
             for i in ignorelist:
-                if i in package.name > 0:
+                if i == package.name:
                     skip = True
         if skip:
             continue
@@ -266,7 +266,7 @@ def main():
         skip = False
         if ignorelist:
             for i in ignorelist:
-                if i in package.name > 0:
+                if i == package.name:
                     skip = True
         if skip:
             continue
