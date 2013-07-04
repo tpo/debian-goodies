@@ -10,6 +10,7 @@ debian-goodies (0.62) UNRELEASED; urgency=low
     - Fix quoting to allow patterns with blanks
   * [check-enhancements]
     - New command by George Danchev (Closes: #679927)
+    - Optimize --help message for help2man
     - Add build-dependency on help2man for check-enhancements' man page
   * [which-pkg-broke]
     - Use 2x dpkg instead of dpkg-architecture  (Closes: #665880)

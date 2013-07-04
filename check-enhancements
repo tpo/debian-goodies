@@ -30,21 +30,24 @@ echo "$VER"
 
 print_help() {
 cat << HLP
-${SELF} - show enhancement packages.
+${SELF} ( -ip | -ie | -h | --verbose | --version )
+
 Options:
+
  Program options start with dash or double dash, otherwise they
  are interpreted as package names. Only non-installed enhancement
  packages are printed out by default, use -ie to show them all.
 
- -ip|--ip|-installed-packages|--installed-packages
+ -ip, --ip, -installed-packages, --installed-packages
      Show enhancements of all installed packages (could be slow)
- -ie|--ie|-installed-enhancements|--installed-enhancements
+ -ie, --ie, -installed-enhancements, --installed-enhancements
      Show installed enhancement packages too
- -h|-help|--help
- -version|--version
- -verbose|--verbose
+ -h, -help, --help
+ -version, --version
+ -verbose, --verbose
 
 Examples:
+
 # check enhancement packages of all installed packages
  ${SELF} -ip
 # check enhancement packages of selected packages
