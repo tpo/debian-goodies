@@ -42,7 +42,8 @@ The programs in this package hold the following copyrights:
  - debian/ contents
 
   Copyright (C) 2001-2004 Matt Zimmerman <mdz@debian.org>
-  Copyright (C) 2006-2010 Javier Fernandez-Sanguino <jfs@debian.org>
+  Copyright (C) 2006-2012 Javier Fernandez-Sanguino <jfs@debian.org>
+  Copyright (C) 2010-2013 Axel Beckert <abe@debian.org>
 
 
 The license of all programs in this package, excluding 'which-pkg-broke' which
