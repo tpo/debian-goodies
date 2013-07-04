@@ -368,10 +368,10 @@ def isdeletedFile (f, blacklist = None):
             if p.search(f):
                 return 0
     # We don't care about log files
-    if f.startswith('/var/log/'):
+    if f.startswith('/var/log/') or f.startswith('/var/local/log/'):
         return 0
     # Or about files under temporary locations
-    if f.startswith('/var/run/'):
+    if f.startswith('/var/run/') or f.startswith('/var/local/run/'):
         return 0
     # Or about files under /tmp
     if f.startswith('/tmp/'):
@@ -385,8 +385,8 @@ def isdeletedFile (f, blacklist = None):
     # Or about files under /drm
     if f.startswith('/drm'):
         return 0
-    # Or about files under /var/tmp
-    if f.startswith('/var/tmp/'):
+    # Or about files under /var/tmp and /var/local/tmp
+    if f.startswith('/var/tmp/') or f.startswith('/var/local/tmp/'):
         return 0
     # Or /dev/zero
     if f.startswith('/dev/zero'):

@@ -21,6 +21,7 @@ debian-goodies (0.62) UNRELEASED; urgency=low
   * [checkrestart]
     - Check ignorelist for package name equality, not substring match.
       Thanks Francesco Poli! (Closes: #696533)
+    - Also ignore log and temp files under /var/local/ (Closes: #695151)
   * Bump debhelper compatibility to 9 to be able to use some more recent
     features. Update versioned debhelper build-dependency accordingly.
   * Revamp debian/rules
