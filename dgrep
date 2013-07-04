@@ -24,7 +24,7 @@ set -e
 prog=`echo $0 | sed 's|.*/d||'`
 
 case "$prog" in
-    grep|egrep|fgrep|zgrep) ;;
+    grep|egrep|fgrep|zgrep|zegrep|zfgrep) ;;
     *) echo >&2 "dpkg-grep: Unrecognized invocation: $0"; exit 1 ;;
 esac
 
