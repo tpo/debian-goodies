@@ -35,6 +35,10 @@ The programs in this package hold the following copyrights:
 
  Copyright (C) 2009  Hanno Hecker <vetinari@ankh-morp.org>
 
+ - check-enhancements
+
+ Copyright (C) 2012  George Danchev <danchev@spnet.net>
+
  - debian/ contents
 
   Copyright (C) 2001-2004 Matt Zimmerman <mdz@debian.org>

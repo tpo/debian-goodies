@@ -3,7 +3,8 @@ Section: utils
 Priority: optional
 Maintainer: Javier Fernandez-Sanguino Pen~a <jfs@debian.org>
 Uploaders: Axel Beckert <abe@debian.org>
-Build-Depends: debhelper (>= 9~)
+Build-Depends: debhelper (>= 9~),
+               help2man
 Vcs-Git: git://anonscm.debian.org/collab-maint/debian-goodies.git
 Vcs-Browser: http://anonscm.debian.org/gitweb/?p=collab-maint/debian-goodies.git
 Standards-Version: 3.9.4

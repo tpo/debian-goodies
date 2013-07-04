@@ -8,6 +8,9 @@ debian-goodies (0.62) UNRELEASED; urgency=low
   * [dgrep]
     - Support (d)zegrep and (d)zfgrep.
     - Fix quoting to allow patterns with blanks
+  * [check-enhancements]
+    - New command by George Danchev (Closes: #679927)
+    - Add build-dependency on help2man for check-enhancements' man page
   * Bump debhelper compatibility to 9 to be able to use some more recent
     features. Update versioned debhelper build-dependency accordingly.
   * Revamp debian/rules

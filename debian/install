@@ -1,4 +1,4 @@
-dgrep dglob debget dpigs debman popbugs which-pkg-broke dhomepage debmany/debmany usr/bin
+dgrep dglob debget dpigs debman popbugs which-pkg-broke dhomepage debmany/debmany check-enhancements usr/bin
 checkrestart usr/sbin
 
 bash_completion/debian-goodies.pkgnames etc/bash_completion.d

@@ -10,6 +10,7 @@ PODDOC=debget dglob dgrep dpigs
 
 override_dh_auto_install:
 	for prog in $(PODDOC); do pod2man -c "Debian-goodies documentation" $$prog.pod > $$prog.1; done
+	help2man -N -m "Debian-goodies documentation" -o check-enhancements.1 ./check-enhancements
 
 override_dh_auto_clean:
 	for prog in $(PODDOC); do rm -f $$prog.1; done
