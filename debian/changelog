@@ -1,6 +1,7 @@
 debian-goodies (0.63) UNRELEASED; urgency=low
 
   * Mention check-enhancements in the long description
+  * Add example to checkrestart's man page (LP: #280793)
 
  -- Axel Beckert <abe@debian.org>  Thu, 04 Jul 2013 22:21:36 +0200
 
