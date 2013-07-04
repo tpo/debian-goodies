@@ -8,6 +8,7 @@ debian-goodies (0.62) UNRELEASED; urgency=low
   * Bump debhelper compatibility to 7 to be able to use some more recent
     features. Update versioned debhelper build-dependency accordingly.
   * Use debian/links instead of calling ln manually in debian/rules
+  * Fix lintian warning dh-clean-k-is-deprecated and use dh_prep
   * Apply wrap-and-sort
 
  -- Axel Beckert <abe@debian.org>  Thu, 04 Jul 2013 17:28:35 +0200
