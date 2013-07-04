@@ -534,7 +534,13 @@ class Process:
                     #m = re.search(r'^(([/]\w*){1,5})\s.*$', cmdline.read())
                     data = cmdline.read().split('\x00')
                     if not data[-1]: data.pop()
-                    data = data[len(data)>=2].split()
+                    # Strip first value, the interpreter
+                    data.pop(0)
+                    # Strip all options following the interpreter, e.g. python's -O
+                    m = re.match("^-", data[0])
+                    while (m):
+                        data.pop(0)
+                        m = re.match("^-", data[0])
                     if data and data[0]: data = data[0]
                     data = self.which(data)
                     m = re.search(r'^(/usr/\S+)$', data)
