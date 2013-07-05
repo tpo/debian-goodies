@@ -532,7 +532,9 @@ class Process:
                     # only match program in /usr (ex.: /usr/sbin/smokeping)
                     # ignore child, etc.
                     #m = re.search(r'^(([/]\w*){1,5})\s.*$', cmdline.read())
+                    # Split by null-bytes, see proc(5)
                     data = cmdline.read().split('\x00')
+                    # Last character should be null-byte, too, see proc(5)
                     if not data[-1]: data.pop()
                     # Strip first value, the interpreter
                     data.pop(0)
