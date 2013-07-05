@@ -4,6 +4,7 @@ debian-goodies (0.63) UNRELEASED; urgency=low
     - Handle programs setting $0 / argv[0] incorrectly (e.g. spamd, see
       https://bugzilla.redhat.com/show_bug.cgi?id=755644; Closes: #715000)
       Thanks Wolodja Wentland!
+    - Add special case to recognize spamds despite their manually set $0.
   * Mention check-enhancements in the long description
   * Add example to checkrestart's man page (LP: #280793)
 

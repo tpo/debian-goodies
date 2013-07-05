@@ -536,21 +536,29 @@ class Process:
                     data = cmdline.read().split('\x00')
                     # Last character should be null-byte, too, see proc(5)
                     if not data[-1]: data.pop()
-                    # Strip first value, the interpreter
-                    data.pop(0)
-                    # Check if something's left after the interpreter, see #715000
-                    if data:
-                        # Strip all options following the interpreter, e.g. python's -O
-                        m = re.match("^-", data[0])
-                        while (m):
-                            data.pop(0)
+                    # Spamd sets $0 wrongly, see
+                    # https://bugzilla.redhat.com/show_bug.cgi?id=755644
+                    # i.e. the blank after spamd is relevant in case
+                    # this will be fixed in the future.
+                    m = re.match("^/usr/sbin/spamd |^spamd ", data[0])
+                    if m:
+                        self.program = "/usr/sbin/spamd"
+                    else:
+                        # Strip first value, the interpreter
+                        data.pop(0)
+                        # Check if something's left after the interpreter, see #715000
+                        if data:
+                            # Strip all options following the interpreter, e.g. python's -O
                             m = re.match("^-", data[0])
-                        if data and data[0]: data = data[0]
-                        data = self.which(data)
-                        m = re.search(r'^(/usr/\S+)$', data)
-                        if m:
-                            # store the real full path of script as the program
-                            self.program = m.group(1)
+                            while (m):
+                                data.pop(0)
+                                m = re.match("^-", data[0])
+                            if data and data[0]: data = data[0]
+                            data = self.which(data)
+                            m = re.search(r'^(/usr/\S+)$', data)
+                            if m:
+                                # store the real full path of script as the program
+                                self.program = m.group(1)
         except OSError, e:
             if e.errno != errno.ENOENT:
                 if self.pid == 1:
