@@ -6,13 +6,26 @@
 # services that need it will be automatically restarted
 # after a security update
 
+# restart-services log
+# Log will contain timestamp and restart-services stdout, stderr
+log='/var/log/restart-services.log'
+
+# Where to store restart-services output, file is deleted at the end
 tmp_output=`mktemp /tmp/cron-daily-restart-services.XXXXXX`
 
+# Get restart-services output, rc. If something goes wrong then print output (=
+# send email by cron)
 restart-services >$tmp_output 2>&1
 exit_status=$?
 if [ "$exit_status" != 0 ]; then
   cat $tmp_output
 fi
 
+# Save date and restart-services output to log file
+echo "Started on `date +%F\ %T`" >> $log
+cat $tmp_output >> $log
+
+# Clear tmp file
 rm $tmp_output 
+
 exit $exit_status
