@@ -2,7 +2,10 @@ debian-goodies (0.64) UNRELEASED; urgency=low
 
   * Fix error in debget error message (Closes: #733466)
   [ Javier Fernández-Sanguino ]
-  * debmany/man/debmany.1: 
+  * [checkrestart]:
+    - Remove util-linux from the blacklist to have it report
+      on getty processes that need to be restarted. (Closes: #688808)
+  * [debmany]
     - Fix typo (use -> usr) in manpage (Closes: #737512)
     - Indicate that /tmp (or /var/tmp) are used for the temporary files,
       not /dev/shm anymore since 679457 was fixed (Closes: #737513)

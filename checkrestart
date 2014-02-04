@@ -71,7 +71,7 @@ def main():
     file_query_check = {}
     blacklistFiles = []
     blacklist = []
-    ignorelist = [ 'util-linux', 'screen' ]
+    ignorelist = [ 'screen' ]
 
 # Process options
     try:
