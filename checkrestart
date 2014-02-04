@@ -44,10 +44,11 @@ import subprocess
 import getopt
 from stat import *
 
-if os.getuid() != 0:
-    sys.stderr.write('ERROR: This program must be run as root in order to obtain information\n')
-    sys.stderr.write('about all open file descriptors in the system.\n')
-    sys.exit(1)
+def checkroot():
+    if os.getuid() != 0:
+        sys.stderr.write('ERROR: This program must be run as root in order to obtain information\n')
+        sys.stderr.write('about all open file descriptors in the system.\n')
+        sys.exit(1)
 
 def find_cmd(cmd):
      dirs = [ '/', '/usr/', '/usr/local/', sys.prefix ]
@@ -108,6 +109,8 @@ def main():
             ignorelist.append(a)
         else:
             assert False, "unhandled option"
+
+    checkroot()
 
     for f in blacklistFiles:
         for line in file(f, "r"):

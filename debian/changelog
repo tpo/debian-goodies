@@ -5,6 +5,8 @@ debian-goodies (0.64) UNRELEASED; urgency=low
   * [checkrestart]:
     - Remove util-linux from the blacklist to have it report
       on getty processes that need to be restarted. (Closes: #688808)
+    - Only complain and exit with error if not running as root when the script
+      is going to be run. Do not complain if it is called with -h or -v.
   * [debmany]
     - Fix typo (use -> usr) in manpage (Closes: #737512)
     - Indicate that /tmp (or /var/tmp) are used for the temporary files,
