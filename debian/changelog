@@ -1,6 +1,8 @@
 debian-goodies (0.64) UNRELEASED; urgency=low
 
+  [ Axel Beckert ]
   * Fix error in debget error message (Closes: #733466)
+
   [ Javier Fernández-Sanguino ]
   * [checkrestart]:
     - Remove util-linux from the blacklist to have it report
@@ -11,6 +13,9 @@ debian-goodies (0.64) UNRELEASED; urgency=low
     - Fix typo (use -> usr) in manpage (Closes: #737512)
     - Indicate that /tmp (or /var/tmp) are used for the temporary files,
       not /dev/shm anymore since 679457 was fixed (Closes: #737513)
+  * [dpigs] 
+    - Add -H option to the manual page, thanks to 'aafuentes' for the patch
+      (Closes: #724248)
 
  -- Axel Beckert <abe@debian.org>  Sun, 29 Dec 2013 04:53:21 +0100
 
