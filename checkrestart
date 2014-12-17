@@ -59,7 +59,7 @@ def find_cmd(cmd):
      return 1
 
 def usage():
-    sys.stderr.write('usage: checkrestart [-vhpa] [-bblacklist] [-iignore]\n')
+    sys.stderr.write('usage: checkrestart [-vhpa] [-bblacklist] [-iignore] [-eexcludepid]\n')
 
 def main():
     global lc_all_c_env, file_query_check
@@ -72,10 +72,11 @@ def main():
     blacklistFiles = []
     blacklist = []
     ignorelist = [ 'util-linux', 'screen' ]
+    excludepidlist = []
 
 # Process options
     try:
-        opts, args = getopt.getopt(sys.argv[1:], "hvpab:i:", ["help", "verbose", "packages", "all", "blacklist", "ignore"])
+        opts, args = getopt.getopt(sys.argv[1:], "hvpab:i:e:", ["help", "verbose", "packages", "all", "blacklist", "ignore", "excludepid"])
     except getopt.GetoptError, err:
         # print help information and exit:
         print str(err) # will print something like "option -x not recognized"
@@ -101,6 +102,8 @@ def main():
         elif o in ("-a", "--all"):
             allFiles = True
             onlyPackageFiles = False
+        elif o in ("-e", "--excludepid"):
+            excludepidlist.append(a)
         elif o in ("-b", "--blacklist"):
             blacklistFiles.append(a)
             onlyPackageFiles = False
@@ -128,7 +131,7 @@ def main():
 # TODO - This does not work yet:
 #        toRestart = psdelcheck()
 
-    toRestart = lsofcheck(blacklist = blacklist)
+    toRestart = lsofcheck(blacklist = blacklist, excludepidlist = excludepidlist)
 
     print "Found %d processes using old versions of upgraded files" % len(toRestart)
 
@@ -274,33 +277,41 @@ def main():
         for process in package.processes:
             print "\t%s\t%s" % (process.pid,process.program)
 
-def lsofcheck(blacklist = None):
+def lsofcheck(blacklist = None, excludepidlist = None):
     processes = {}
 
-    for line in os.popen('lsof +XL -F nf').readlines():
-        field, data = line[0], line[1:-1]
+    # Get a list of running processes
+    pids = [pid for pid in os.listdir('/proc') if pid.isdigit()]
 
-        if field == 'p':
-            process = processes.setdefault(data,Process(int(data)))
-        elif field == 'k':
-            process.links.append(data)
-        elif field == 'n':
-            # Remove the previous entry to check if this is something we should use
-            if data.startswith('/SYSV'):
-                # If we find SYSV we discard the previous descriptor
-                last = process.descriptors.pop()
-            elif data.startswith('/'):
-                last = process.descriptors.pop()
-                # Add it to the list of deleted files if the previous descriptor
-                # was DEL or lsof marks it as deleted
-                if re.compile("DEL").search(last) or re.compile("deleted").search(data) or re.compile("\(path inode=[0-9]+\)$").search(data):
-                    process.files.append(data)
-            else:
-                # We discard the previous descriptors and drop it
-                last = process.descriptors.pop()
-        elif field == 'f':
-            # Save the descriptor for later comparison
-            process.descriptors.append(data)
+    for pid in pids:
+        if pid in excludepidlist:
+            continue
+        
+        # Get the list of open files for this process from /proc
+        # We can ignore failures over this block as links will
+		# disappear as we run them
+        foundfiles = []
+        try:
+            for fd in os.listdir('/proc/' + pid + '/fd'):
+                if os.path.islink('/proc/' + pid + '/fd/' + fd):
+                    fname = os.readlink('/proc/' + pid + '/fd/' + fd)
+                    if re.compile("deleted").search(fname):
+                        foundfiles.append(fname)
+        except:
+            continue
+
+        # Get the list of memory mapped files using system pmap
+        for output in os.popen('pmap ' + pid).readlines():
+            data = re.split('\s+', output.strip('\n'), 3)
+            if len(data) == 4:
+                f = data[3]
+                if re.compile("deleted").search(f):
+                    foundfiles.append(f)
+
+        if len(foundfiles) > 1:
+            process = processes.setdefault(pid,Process(int(pid)))
+            # print pid + ': ' + ', '.join(foundfiles)
+            process.files = foundfiles
 
     toRestart = filter(lambda process: process.needsRestart(blacklist),
                        processes.values())
