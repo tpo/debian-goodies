@@ -6,7 +6,7 @@
 .SH NAME
 checkrestart \- check which processes need to be restarted after an upgrade
 .SH SYNOPSIS
-.B checkrestart [ -hvpa ] [ -b blacklist_file ] [ -i package_name ]
+.B checkrestart [ -hvpa ] [ -b blacklist_file ] [ -i package_name ] [ -e pid ]
 .SH DESCRIPTION
 The
 .B checkrestart
@@ -67,6 +67,12 @@ Any files matching the patterns will be ignored.
 .BI -i\ name, --ignore=name
 Ignore services that are associated to the package name provided in
 .I name.
+
+.TP
+.BI -e\ pid, --excludepid=pid
+Exclude process with
+.I pid
+when searching for open files
 
 .SH EXIT STATUS
 
