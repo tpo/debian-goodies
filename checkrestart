@@ -120,17 +120,6 @@ def main():
 
 # Start checking
 
-    if find_cmd('lsof') == 1:
-        sys.stderr.write('ERROR: This program needs lsof in order to run.\n')
-        sys.stderr.write('Please install the lsof package in your system.\n')
-        sys.exit(1)
-# Check if we have lsof, if not, use psdel
-#    if find_cmd('lsof'):
-#         toRestart = lsofcheck()
-#    else:
-# TODO - This does not work yet:
-#        toRestart = psdelcheck()
-
     toRestart = lsofcheck(blacklist = blacklist, excludepidlist = excludepidlist)
 
     print "Found %d processes using old versions of upgraded files" % len(toRestart)
