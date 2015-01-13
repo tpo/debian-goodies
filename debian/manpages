@@ -1,0 +1,14 @@
+checkrestart.1
+restart-services.1
+debget.1
+debman.1
+dglob.1
+dgrep.1
+dhomepage.1
+dpigs.1
+popbugs.1
+which-pkg-broke.1
+check-enhancements.1
+
+debmany/man/debmany.1
+debmany/man/debmany.de.1

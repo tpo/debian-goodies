@@ -1,2 +1,5 @@
-debmany/bash_completion/debmany etc/bash_completion.d
+dgrep dglob debget dpigs debman popbugs which-pkg-broke dhomepage debmany/debmany check-enhancements usr/bin
+checkrestart restart-services usr/sbin
+
 bash_completion/debian-goodies.pkgnames etc/bash_completion.d
+debmany/bash_completion/debmany etc/bash_completion.d

@@ -1,0 +1,145 @@
+#!/bin/bash
+
+# Copyright (C) 2012 George Danchev <danchev@spnet.net>
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2, or (at your option)
+# any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
+# 02111-1307, USA.
+
+SELF=$(basename "$0")
+VER=0.3
+
+OPT_CHECK_INSTALLED_PACKAGES=0
+OPT_SHOW_INSTALLED_ENHANCEMENTS=0
+OPT_VERBOSE=0
+
+print_version() {
+echo "$VER"
+}
+
+print_help() {
+cat << HLP
+${SELF} ( -ip | -ie | -h | --verbose | --version )
+
+Options:
+
+ Program options start with dash or double dash, otherwise they
+ are interpreted as package names. Only non-installed enhancement
+ packages are printed out by default, use -ie to show them all.
+
+ -ip, --ip, -installed-packages, --installed-packages
+     Show enhancements of all installed packages (could be slow)
+ -ie, --ie, -installed-enhancements, --installed-enhancements
+     Show installed enhancement packages too
+ -h, -help, --help
+ -version, --version
+ -verbose, --verbose
+
+Examples:
+
+# check enhancement packages of all installed packages
+ ${SELF} -ip
+# check enhancement packages of selected packages
+ ${SELF} pkg1 pkgN
+
+HLP
+}
+
+pkgs_enhancing_pkg_status() {
+    # Figure out package Enhances:'ing a given package
+    EN=`grep-dctrl -n -s Package -F Enhances -X "${1}" /var/lib/apt/lists/*Packages`
+    case $? in
+       0) if test $OPT_VERBOSE != 0; then echo -e "Package <<$1>> could be Enhanced by:"; fi
+       ;;
+       1) continue
+       ;;
+       *) echo "${SELF}: Internal Error!"
+          exit 1
+       ;;
+    esac
+    for e in `echo "${EN}" | sort | uniq | xargs` # now sort and unify
+    do
+          # Figure out whether those enhancements are installed or not.
+	  # By default only output non-installed enhancements
+	  OUT=""
+	  case "${OPT_SHOW_INSTALLED_ENHANCEMENTS}" in
+	       0) OUT=`apt-cache policy ${e} | head -3 | paste -s | grep "Installed: (none)"`
+	       ;;
+	       1) OUT=`apt-cache policy ${e} | head -3 | paste -s`
+	       ;;
+	  esac
+          if test x"$OUT" != x""; then printf "%2s => " "$1" && echo "${OUT}"; fi
+    done
+}
+
+# main
+declare -a PKGS=()
+for op in $@
+do
+  case "${op}" in
+    -ip|--ip|-installed-packages|--installed-packages)
+      OPT_CHECK_INSTALLED_PACKAGES=1
+    ;;
+
+    -ie|--ie|-installed-enhancements|--installed-enhancements)
+      OPT_SHOW_INSTALLED_ENHANCEMENTS=1
+    ;;
+
+    -h|-help|--help)
+      print_help
+      exit 0
+    ;;
+
+    -version|--version)
+      print_version
+      exit 0
+    ;;
+
+    -verbose|--verbose)
+      OPT_VERBOSE=1
+    ;;
+
+    -*)
+      echo "invalid option ${op}"
+      print_help
+      exit 1
+    ;;
+
+    *)
+#      PKGS[$[${#PKGS[@]}+1]]="${op}"
+      PKGS+=(${op})
+    ;;
+  esac
+done
+
+# no options, just show help
+if test x"$1" == x""; then print_help; exit 0; fi
+
+# process package names given on the cmdline
+for cmdline_pkg in "${PKGS[@]}"
+do 
+    pkgs_enhancing_pkg_status $cmdline_pkg
+done
+
+# process installed packages, as well
+case $OPT_CHECK_INSTALLED_PACKAGES in
+    1)
+    for installed in $(grep-status -FStatus "install ok installed" -n -s Package | sort | uniq)
+    do
+       pkgs_enhancing_pkg_status $installed
+    done
+    ;;
+esac
+
+exit 0

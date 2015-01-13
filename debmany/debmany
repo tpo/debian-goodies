@@ -30,7 +30,7 @@ othercmdline="sensible-pager %s"  # viewer for other files
 curdir=`pwd`
 
 # Version of debmany
-version=1.4
+version=1.5
 
 error()
 {
@@ -232,7 +232,7 @@ else
   trap 'test -n "$temp" && rm -rf "$temp"; exit' 0 2 15 # cleanup
 
   # find a directory for temporary files (you can use $TMPDIR to specify the destination)
-  for tmp in "$TMPDIR" /dev/shm /tmp /var/tmp
+  for tmp in "$TMPDIR" /tmp /var/tmp
   do
     test -d "$tmp" && break
   done
@@ -329,7 +329,7 @@ else
       fi
       # download the package
       debug "Mode3: Start download using curl" # comment
-      curl "$url" >"$file" || error "Failed to download '$url' to '$file'."
+      curl --location "$url" >"$file" || error "Failed to download '$url' to '$file'."
       status=repos-curl
     fi
   fi

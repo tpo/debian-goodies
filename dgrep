@@ -24,7 +24,7 @@ set -e
 prog=`echo $0 | sed 's|.*/d||'`
 
 case "$prog" in
-    grep|egrep|fgrep|zgrep) ;;
+    grep|egrep|fgrep|zgrep|zegrep|zfgrep) ;;
     *) echo >&2 "dpkg-grep: Unrecognized invocation: $0"; exit 1 ;;
 esac
 
@@ -66,4 +66,4 @@ while test $# -ne 0; do
     shift
 done
 
-exec dglob -0f "$@" | xargs -0r $prog $opts $pat
+exec dglob -0f "$@" | xargs -0r $prog $opts "$pat"

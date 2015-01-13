@@ -73,6 +73,61 @@ Ignore services that are associated to the package name provided in
 The program will exit with error (1) if a non-root user tries to run it. Otherwise,
 it will always exit with error status 0.
 
+.SH EXAMPLE
+
+Start it as user root without parameters:
+
+  # checkrestart
+  Found 20 processes using old versions of upgraded files
+  (15 distinct programs)
+  (14 distinct packages)
+  
+  Of these, 12 seem to contain init scripts which can be used to restart them:
+  The following packages seem to have init scripts that could be used to restart them:
+  gpm:
+          3044    /usr/sbin/gpm
+  rpcbind:
+          2208    /sbin/rpcbind
+  bind9:  
+          8463    /usr/sbin/named
+  openssh-server:
+          22124   /usr/sbin/sshd
+  ntp:
+          4078    /usr/sbin/ntpd
+  tftpd-hpa:
+          3417    /usr/sbin/in.tftpd
+  uptimed:
+          2704    /usr/sbin/uptimed
+  cron:   
+          3019    /usr/sbin/cron
+  postfix:
+          22145   /usr/lib/postfix/qmgr
+          8892    /usr/lib/postfix/master
+  hddtemp:
+          3174    /usr/sbin/hddtemp
+  autofs: 
+          2792    /usr/sbin/automount
+  openbsd-inetd:
+          3254    /usr/sbin/inetd
+  
+  These are the init scripts:
+  service gpm restart
+  service rpcbind restart
+  service bind9 restart
+  service ssh restart
+  service ntp restart
+  service tftpd-hpa restart
+  service uptimed restart
+  service cron restart
+  service postfix restart
+  service hddtemp restart
+  service autofs restart
+  service openbsd-inetd restart
+  
+  These processes do not seem to have an associated init script to restart them:
+  isc-dhcp-client:
+          3775    /sbin/dhclient
+
 .SH BUGS
 This program might fail if the output of the \fIlsof\fP utility changes since it
 depends on it to detect which deleted files are used by processes. It might

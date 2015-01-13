@@ -1,4 +1,10 @@
-debian-goodies (0.61-0.7) unstable; urgency=low
+debian-goodies (0.64-0.8) unstable; urgency=low
+
+  * rebased changes onto 0.64
+
+ -- Tomas Pospisek <tpo_deb@sourcepole.ch>  Tue, 13 Jan 2015 10:44:12 +0100
+
+debian-goodies (0.64-0.7) unstable; urgency=low
 
   * [NMU]
   * [checkrestart] 
@@ -6,7 +12,7 @@ debian-goodies (0.61-0.7) unstable; urgency=low
 
  -- Tomas Pospisek <tpo_deb@sourcepole.ch>  Mon, 17 Dec 2012 08:38:41 +0100
 
-debian-goodies (0.61-0.6) unstable; urgency=low
+debian-goodies (0.64-0.6) unstable; urgency=low
 
   * [NMU]
   * [restart-services] 
@@ -17,7 +23,7 @@ debian-goodies (0.61-0.6) unstable; urgency=low
 
  -- Tomas Pospisek <tpo_deb@sourcepole.ch>  Thu, 30 Aug 2012 11:36:36 +0200
 
-debian-goodies (0.61-0.5) unstable; urgency=low
+debian-goodies (0.64-0.5) unstable; urgency=low
 
   * [NMU]
     - added new script restart-services, which restarts services as indicated
@@ -25,6 +31,81 @@ debian-goodies (0.61-0.5) unstable; urgency=low
     - merge with the new 0.61 release and with anonscm.debian.org
 
  -- Tomas Pospisek <tpo_deb@sourcepole.ch>  Mon, 18 Jun 2012 11:06:08 +0200
+
+debian-goodies (0.64) UNRELEASED; urgency=low
+
+  [ Axel Beckert ]
+  * Fix error in debget error message (Closes: #733466)
+
+  [ Javier Fernández-Sanguino ]
+  * [checkrestart]:
+    - Remove util-linux from the blacklist to have it report
+      on getty processes that need to be restarted. (Closes: #688808)
+    - Only complain and exit with error if not running as root when the script
+      is going to be run. Do not complain if it is called with -h or -v.
+  * [debmany]
+    - Fix typo (use -> usr) in manpage (Closes: #737512)
+    - Indicate that /tmp (or /var/tmp) are used for the temporary files,
+      not /dev/shm anymore since 679457 was fixed (Closes: #737513)
+  * [dpigs] 
+    - Add -H option to the manual page, thanks to 'aafuentes' for the patch
+      (Closes: #724248)
+
+ -- Axel Beckert <abe@debian.org>  Sun, 29 Dec 2013 04:53:21 +0100
+
+debian-goodies (0.63) unstable; urgency=low
+
+  * [checkrestart]:
+    - Handle programs setting $0 / argv[0] incorrectly (e.g. spamd, see
+      https://bugzilla.redhat.com/show_bug.cgi?id=755644; Closes: #715000)
+      Thanks Wolodja Wentland!
+    - Add special case to recognize spamds despite their manually set $0.
+  * Mention check-enhancements in the long description
+  * Add example to checkrestart's man page (LP: #280793)
+
+ -- Axel Beckert <abe@debian.org>  Fri, 05 Jul 2013 14:47:10 +0200
+
+debian-goodies (0.62) unstable; urgency=low
+
+  [ Paul Wise ]
+  * [checkrestart]
+    - don't get confused by deleted interpreters (Closes: #696139)
+
+  [ Axel Beckert ]
+  * [dgrep]
+    - Support (d)zegrep and (d)zfgrep.
+    - Fix quoting to allow patterns with blanks
+  * [check-enhancements]
+    - New command by George Danchev (Closes: #679927)
+    - Optimize --help message for help2man
+    - Add build-dependency on help2man for check-enhancements' man page
+  * [which-pkg-broke]
+    - Use 2x dpkg instead of dpkg-architecture  (Closes: #665880)
+    - Don't read architecture list again for each package to check (much
+      faster now, thanks to Jakub Wilk for the idea!)
+  * [debmany]
+    - Use curl --location to support redirects (Closes: #679225)
+    - No more use /dev/shm for temporary files (Closes: #679457)
+  * [checkrestart]
+    - Check ignorelist for package name equality, not substring match.
+      Thanks Francesco Poli! (Closes: #696533)
+    - Also ignore log and temp files under /var/local/ (Closes: #695151)
+    - Ignore options between interpreter and script name (Closes: #678635)
+  * Bump debhelper compatibility to 9 to be able to use some more recent
+    features. Update versioned debhelper build-dependency accordingly.
+  * Revamp debian/rules
+    - No more remove stamp files manually.
+    - Use debian/links instead of calling ln manually in debian/rules
+    - Use dh_install/dh_link to install all the scripts
+    - Use debian/manpages instead of parameters to dh_installman
+    - Use debian/docs instead of parameters to dh_installdocs
+    - Fix lintian warning dh-clean-k-is-deprecated and use dh_prep
+    - Finally switch to dh v7 style debian/rules file
+  * Bump Standards-Version to 3.9.4 (no changes)
+  * Apply wrap-and-sort
+  * Update copyright years in debian/copyright
+
+ -- Axel Beckert <abe@debian.org>  Thu, 04 Jul 2013 21:59:21 +0200
 
 debian-goodies (0.61) unstable; urgency=low
 

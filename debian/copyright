@@ -8,7 +8,7 @@ Upstream Authors: Matt Zimmerman <mdz@debian.org>
 
 Copyright:
 
-The programs in this package hold the following copyrights: 
+The programs in this package hold the following copyrights:
 
  - checkrestart:
   Copyright (C) 2001 Matt Zimmerman <mdz@debian.org>
@@ -35,10 +35,15 @@ The programs in this package hold the following copyrights:
 
  Copyright (C) 2009  Hanno Hecker <vetinari@ankh-morp.org>
 
+ - check-enhancements
+
+ Copyright (C) 2012  George Danchev <danchev@spnet.net>
+
  - debian/ contents
 
   Copyright (C) 2001-2004 Matt Zimmerman <mdz@debian.org>
-  Copyright (C) 2006-2010 Javier Fernandez-Sanguino <jfs@debian.org>
+  Copyright (C) 2006-2012 Javier Fernandez-Sanguino <jfs@debian.org>
+  Copyright (C) 2010-2013 Axel Beckert <abe@debian.org>
 
 
 The license of all programs in this package, excluding 'which-pkg-broke' which
@@ -56,7 +61,7 @@ is in the public domain, and debpaste, is:
 
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, 
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
 # MA 02110-1301 USA
 
 

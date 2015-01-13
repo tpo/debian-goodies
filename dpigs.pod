@@ -8,18 +8,14 @@ B<dpigs> [I<options>]
 
 =head1 DESCRIPTION
 
-B<dpigs> sorts the installed packages by size and outputs the largest 
+B<dpigs> sorts the installed packages by size and outputs the largest
 ones. Per default dpigs displays the largest 10 packages. You can change
-this value by using the B<-n> option (see L<"OPTIONS">). The information 
+this value by using the B<-n> option (see L<"OPTIONS">). The information
 is taken from the dpkg status file with grep-status(1).
 
 =head1 OPTIONS
 
 =over 4
-
-=item B<-h>, B<--help>
-
-Display some usage information and exit.
 
 =item B<-n>, B<--lines>=I<N>
 
@@ -35,7 +31,16 @@ F</var/lib/dpkg/status> currently).
 Display the largest source packages of binary packages installed on
 the system.
 
-=back 
+=item B<-H>, B<--human-readable>
+
+Display package sizes in human-readable format (like ls -lh or du -h)
+
+=item B<-h>, B<--help>
+
+Display some usage information and exit.
+
+
+=back
 
 =head1 AUTHOR
 

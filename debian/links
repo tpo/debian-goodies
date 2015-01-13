@@ -1,0 +1,11 @@
+usr/bin/dgrep usr/bin/degrep
+usr/bin/dgrep usr/bin/dfgrep
+usr/bin/dgrep usr/bin/dzgrep
+usr/bin/dgrep usr/bin/dzegrep
+usr/bin/dgrep usr/bin/dzfgrep
+
+usr/share/man/man1/dgrep.1.gz usr/share/man/man1/degrep.1.gz
+usr/share/man/man1/dgrep.1.gz usr/share/man/man1/dfgrep.1.gz
+usr/share/man/man1/dgrep.1.gz usr/share/man/man1/dzgrep.1.gz
+usr/share/man/man1/dgrep.1.gz usr/share/man/man1/dzegrep.1.gz
+usr/share/man/man1/dgrep.1.gz usr/share/man/man1/dzfgrep.1.gz

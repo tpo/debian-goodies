@@ -44,10 +44,11 @@ import subprocess
 import getopt
 from stat import *
 
-if os.getuid() != 0:
-    sys.stderr.write('ERROR: This program must be run as root in order to obtain information\n')
-    sys.stderr.write('about all open file descriptors in the system.\n')
-    sys.exit(1)
+def checkroot():
+    if os.getuid() != 0:
+        sys.stderr.write('ERROR: This program must be run as root in order to obtain information\n')
+        sys.stderr.write('about all open file descriptors in the system.\n')
+        sys.exit(1)
 
 def find_cmd(cmd):
      dirs = [ '/', '/usr/', '/usr/local/', sys.prefix ]
@@ -71,7 +72,7 @@ def main():
     file_query_check = {}
     blacklistFiles = []
     blacklist = []
-    ignorelist = [ 'util-linux', 'screen' ]
+    ignorelist = [ 'screen' ]
 
 # Process options
     try:
@@ -108,6 +109,8 @@ def main():
             ignorelist.append(a)
         else:
             assert False, "unhandled option"
+
+    checkroot()
 
     for f in blacklistFiles:
         for line in file(f, "r"):
@@ -206,7 +209,7 @@ def main():
         skip = False
         if ignorelist:
             for i in ignorelist:
-                if i in package.name > 0:
+                if i == package.name:
                     skip = True
         if skip:
             continue
@@ -266,7 +269,7 @@ def main():
         skip = False
         if ignorelist:
             for i in ignorelist:
-                if i in package.name > 0:
+                if i == package.name:
                     skip = True
         if skip:
             continue
@@ -368,10 +371,10 @@ def isdeletedFile (f, blacklist = None):
             if p.search(f):
                 return 0
     # We don't care about log files
-    if f.startswith('/var/log/'):
+    if f.startswith('/var/log/') or f.startswith('/var/local/log/'):
         return 0
     # Or about files under temporary locations
-    if f.startswith('/var/run/'):
+    if f.startswith('/var/run/') or f.startswith('/var/local/run/'):
         return 0
     # Or about files under /tmp
     if f.startswith('/tmp/'):
@@ -385,8 +388,8 @@ def isdeletedFile (f, blacklist = None):
     # Or about files under /drm
     if f.startswith('/drm'):
         return 0
-    # Or about files under /var/tmp
-    if f.startswith('/var/tmp/'):
+    # Or about files under /var/tmp and /var/local/tmp
+    if f.startswith('/var/tmp/') or f.startswith('/var/local/tmp/'):
         return 0
     # Or /dev/zero
     if f.startswith('/dev/zero'):
@@ -532,10 +535,33 @@ class Process:
                     # only match program in /usr (ex.: /usr/sbin/smokeping)
                     # ignore child, etc.
                     #m = re.search(r'^(([/]\w*){1,5})\s.*$', cmdline.read())
-                    m = re.search(r'^(/usr/\S+)$', cmdline.read())
+                    # Split by null-bytes, see proc(5)
+                    data = cmdline.read().split('\x00')
+                    # Last character should be null-byte, too, see proc(5)
+                    if not data[-1]: data.pop()
+                    # Spamd sets $0 wrongly, see
+                    # https://bugzilla.redhat.com/show_bug.cgi?id=755644
+                    # i.e. the blank after spamd is relevant in case
+                    # this will be fixed in the future.
+                    m = re.match("^/usr/sbin/spamd |^spamd ", data[0])
                     if m:
-                        # store the real full path of script as the program
-                        self.program = m.group(1)
+                        self.program = "/usr/sbin/spamd"
+                    else:
+                        # Strip first value, the interpreter
+                        data.pop(0)
+                        # Check if something's left after the interpreter, see #715000
+                        if data:
+                            # Strip all options following the interpreter, e.g. python's -O
+                            m = re.match("^-", data[0])
+                            while (m):
+                                data.pop(0)
+                                m = re.match("^-", data[0])
+                            if data and data[0]: data = data[0]
+                            data = self.which(data)
+                            m = re.search(r'^(/usr/\S+)$', data)
+                            if m:
+                                # store the real full path of script as the program
+                                self.program = m.group(1)
         except OSError, e:
             if e.errno != errno.ENOENT:
                 if self.pid == 1:
@@ -544,6 +570,20 @@ class Process:
                     sys.stderr.write('ERROR: Failed to read pid %d' % self.pid)
                     raise
         self.program = self.cleanFile(self.program)
+
+    def which(self, program):
+        if os.path.isabs(program):
+            return program
+        path = os.environ.get("PATH", os.defpath).split(os.pathsep)
+        seen = set()
+        for dir in path:
+            dir = os.path.normcase(os.path.abspath(dir))
+            if not dir in seen:
+                seen.add(dir)
+                name = os.path.join(dir, program)
+                if os.path.exists(name) and os.access(name, os.F_OK|os.X_OK) and not os.path.isdir(name):
+                    return name
+        return program
 
     def cleanFile(self, f):
         # /proc/pid/exe has all kinds of junk in it sometimes

@@ -32,7 +32,7 @@ Optionally set a manpage viewer. The viewer must support .gz files. You must def
 If you use a graphical viewer you must ensure that you have access to your desktop (if necessary: sux or ssh with X\-forwarding)
 .TP 
 \fB\-o otherviewer\fR
-Optionally set a viewer for other files (/use/share/doc).
+Optionally set a viewer for other files (/usr/share/doc).
 .TP 
 \fB\-L limit\fR
 If a file which must be downloaded exceeds this limit, you are asked if the download should start. Without unit the value is in bytes. You can append K, M, G or T to the value to change the unit.
@@ -44,7 +44,7 @@ Character set versions automatically generated during installation are not avail
 \fB\-z\fR
 Zenity (a graphical dialog) is used to select the files and if necessary to enter the package name. You must have the rights to start X programs. This option combined with the parameters \-k, \-g, \-x or \-m and \-o make it possible to use debmany without console.
 .PP 
-The manpages are temporarily extracted to /dev/shm (if the directory exists) or /tmp . You can override the path if you set and export the environment variable TMPDIR or set it as a temporary variable.
+The manpages are temporarily extracted to a temporary directory under /tmp (or /var/tmp, if /tmp is not a directory). You can override the path if you set and export the environment variable TMPDIR or set it as a temporary variable.
 .PP 
 You need to have the Debian package "whiptail" (preferred) or "dialog" as well as "curl" installed.
 .SH "EXAMPLES"

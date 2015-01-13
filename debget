@@ -59,8 +59,8 @@ for pkgspec in $*; do
    apt-get -q2 --print-uris --reinstall install "$pkgspec" 2>/dev/null >/dev/null
    if [ $? -ne 0 ] ; then
 	echo "ERROR: There is no '$pkgspec' package. Sorry."
-        echo "If you believe the package exists then consider updating your."
-        echo "package database using 'apt-get update'"
+        echo "If you believe the package exists then consider updating your"
+        echo "package database using 'apt-get update'."
 	continue
    fi
    set -e

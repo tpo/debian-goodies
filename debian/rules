@@ -1,75 +1,19 @@
 #!/usr/bin/make -f
-# Sample debian/rules that uses debhelper.
-# GNU copyright 1997 to 1999 by Joey Hess.
 
 # Uncomment this to turn on verbose mode.
 #export DH_VERBOSE=1
 
 PODDOC=debget dglob dgrep dpigs
 
-build: build-arch build-indep
-build-arch: build-stamp
-build-indep: build-stamp
-build-stamp:
-	dh_testdir
+%:
+	dh $@
 
+override_dh_auto_build:
 	for prog in $(PODDOC); do pod2man -c "Debian-goodies documentation" $$prog.pod > $$prog.1; done
+	help2man -n "check-enhancements - show enhancement packages" \
+	         -m "Debian-goodies documentation" \
+	         -N ./check-enhancements | \
+	    sed -e 's/DESCRIPTION/SYNOPSIS/' > check-enhancements.1
 
-	touch build-stamp
-
-clean:
-	dh_testdir
-	dh_testroot
-	rm -f build-stamp
+override_dh_auto_clean:
 	for prog in $(PODDOC); do rm -f $$prog.1; done
-
-	dh_clean
-
-install: build
-	dh_testdir
-	dh_testroot
-	dh_clean -k
-	dh_installdirs
-
-	# Add here commands to install the package into debian/debian-goodies.
-	install -d $(CURDIR)/debian/debian-goodies/usr/bin
-	install -d $(CURDIR)/debian/debian-goodies/usr/sbin
-	install -m 755 dgrep dglob debget dpigs debman popbugs which-pkg-broke \
-		dhomepage $(CURDIR)/debian/debian-goodies/usr/bin
-	install -m 755 checkrestart restart-services \
-		$(CURDIR)/debian/debian-goodies/usr/sbin
-	for grepname in dzgrep degrep dfgrep; do \
-		ln -s dgrep $(CURDIR)/debian/debian-goodies/usr/bin/$$grepname; \
-	done
-	install -m 755 debmany/debmany \
-		$(CURDIR)/debian/debian-goodies/usr/bin
-
-# Build architecture-dependent files here.
-# We have nothing to do by default.
-binary-arch: build install
-
-# Build architecture-independent files here.
-binary-indep: build install
-	dh_testdir
-	dh_testroot
-	dh_installdocs README
-	dh_installexamples examples/restart-services
-	dh_installman debget.1 debman.1 dglob.1 dgrep.1 dpigs.1 popbugs.1 \
-		which-pkg-broke.1 checkrestart.1 restart-services.1 dhomepage.1 \
-		debmany/man/debmany.1 debmany/man/debmany.de.1
-#	dh_undocumented
-	dh_installchangelogs 
-	dh_install
-	dh_link
-	dh_compress
-	ln -s dgrep.1.gz debian/debian-goodies/usr/share/man/man1/degrep.1.gz
-	ln -s dgrep.1.gz debian/debian-goodies/usr/share/man/man1/dfgrep.1.gz
-	ln -s dgrep.1.gz debian/debian-goodies/usr/share/man/man1/dzgrep.1.gz
-	dh_fixperms
-	dh_installdeb
-	dh_gencontrol
-	dh_md5sums
-	dh_builddeb
-
-binary: binary-indep binary-arch
-.PHONY: build clean binary-indep binary-arch binary install configure

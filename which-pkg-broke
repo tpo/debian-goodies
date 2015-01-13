@@ -43,23 +43,39 @@ def alldeps(pkg, ignore):
     dlist = deps.keys()
     return dlist
 
-def pkginstalltime(pkg):
-    dpkg_archs = subprocess.Popen(
-        ['dpkg-architecture', '-L'],
+
+def localarchitectures():
+    architectures = []
+    dpkg_arch = subprocess.Popen(
+        ['dpkg', '--print-architecture'],
         stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
         env={} # force POSIX locale
     )
+    for arch in dpkg_arch.stdout.readlines():
+        architectures.append(arch.rstrip())
 
-    arch = dpkg_archs.stdout.readline().rstrip()
+    try:
+        dpkg_archs = subprocess.Popen(
+            ['dpkg', '--print-foreign-architecture'],
+            stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+            env={} # force POSIX locale
+            )
+        for arch in dpkg_archs.stdout.readlines():
+            architectures.append(arch.rstrip())
+
+    except OSError:
+        pass # non-multiarchy dpkg, which is ok
+
+    return architectures
+
+def pkginstalltime(pkg, architectures):
     times = []
-    while(arch != ''):
+    for arch in architectures:
         listfile = '/var/lib/dpkg/info/' + pkg + ':' + arch + '.list'
         try:
             times.append([pkg + ':' + arch, os.stat(listfile)[ST_MTIME]])
         except OSError:
             pass
-        arch = dpkg_archs.stdout.readline().rstrip()
-    dpkg_archs.wait()
 
     if not times:
         listfile = '/var/lib/dpkg/info/' + pkg + '.list'
@@ -77,9 +93,11 @@ def what_broke(pname):
     pkgs = [ pname ]
     pkgs.extend(alldeps(sys.argv[1], {}))
 
+    architectures = localarchitectures()
+
     itimes = []
     for p in pkgs:
-        itimes.extend(pkginstalltime(p))
+        itimes.extend(pkginstalltime(p, architectures))
     itimes.sort(sortfun)
     for i in itimes:
         p, t = i
