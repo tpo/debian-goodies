@@ -284,7 +284,7 @@ def lsofcheck(blacklist = None, excludepidlist = None):
             for fd in os.listdir('/proc/' + pid + '/fd'):
                 if os.path.islink('/proc/' + pid + '/fd/' + fd):
                     fname = os.readlink('/proc/' + pid + '/fd/' + fd)
-                    if re.compile("deleted").search(fname):
+                    if re.compile("\s\(deleted\)$").search(fname):
                         foundfiles.append(fname)
         except:
             continue
@@ -294,7 +294,7 @@ def lsofcheck(blacklist = None, excludepidlist = None):
             data = re.split('\s+', output.strip('\n'), 3)
             if len(data) == 4:
                 f = data[3]
-                if re.compile("deleted").search(f):
+                if re.compile("\s\(deleted\)$").search(f):
                     foundfiles.append(f)
 
         if len(foundfiles) > 1:
