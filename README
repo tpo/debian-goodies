@@ -1,3 +1,14 @@
+ATTENTION!
+
+  Work on this debian-goodies fork has been discontinued. Please use
+  Debian's own debian-goodies.
+
+  The restart-services script, that was the one added feature/script
+  to debian-goodies lives on at
+
+     https://github.com/sourcepole/restart-services
+
+
 There is no substantial documentation yet.  Volunteer authors are
 more than welcome.  Here are some examples to get you started.
 
